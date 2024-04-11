@@ -1,0 +1,72 @@
+package bind
+
+import (
+	"image"
+	"unsafe"
+)
+
+func goString(cText unsafe.Pointer) string {
+	if cText == nil {
+		return ""
+	}
+
+	var length int
+	for {
+		if *(*byte)(unsafe.Add(cText, uintptr(length))) == '\x00' {
+			break
+		}
+		length++
+	}
+
+	return unsafe.String((*byte)(cText), length)
+}
+
+func goImageSlice(c unsafe.Pointer, size int) (goImages []Image) {
+	goImages = make([]Image, size)
+
+	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
+	ptr := *(*unsafe.Pointer)(&c)
+	if ptr == nil {
+		return nil
+	}
+	img := (*cImage)(ptr)
+	imgSlice := unsafe.Slice(img, size)
+
+	for i, imageS := range imgSlice {
+		dataPtr := *(*unsafe.Pointer)(unsafe.Pointer(&imageS.data))
+
+		goImages[i] = Image{
+			Channel: imageS.channel,
+			Width:   imageS.width,
+			Height:  imageS.height,
+			Data:    unsafe.Slice((*byte)(dataPtr), imageS.channel*imageS.width*imageS.height),
+		}
+	}
+
+	return
+}
+
+func imageToBytes(decode image.Image) Image {
+	bounds := decode.Bounds()
+	width := bounds.Max.X - bounds.Min.X
+	height := bounds.Max.Y - bounds.Min.Y
+	size := width * height * 3
+	bytesImg := make([]byte, size)
+
+	for x := bounds.Min.X; x < bounds.Max.X; x++ {
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			idx := (y*width + x) * 3
+			r, g, b, _ := decode.At(x, y).RGBA()
+			bytesImg[idx] = byte(r >> 8)
+			bytesImg[idx+1] = byte(g >> 8)
+			bytesImg[idx+2] = byte(b >> 8)
+		}
+	}
+
+	return Image{
+		Width:   uint32(width),
+		Height:  uint32(height),
+		Data:    bytesImg,
+		Channel: 3,
+	}
+}

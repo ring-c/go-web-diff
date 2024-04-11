@@ -2,6 +2,7 @@ package sd
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -38,20 +39,28 @@ var DefaultFullParams = &opts.FullParams{
 
 type Model struct {
 	options *opts.Options
-	cSD     *bind.CStableDiffusionImpl
-	ctx     *bind.CStableDiffusionCtx
+
+	cSD *bind.CStableDiffusionImpl
+	ctx *bind.CStableDiffusionCtx
+
+	esrganPath  string
+	upscalerCtx *bind.CUpScalerCtx
 
 	// diffusionModelPath string
 	// isAutoLoad         bool
 	// dylibPath          string
-	// esrganPath         string
-	// upscalerCtx        *CUpScalerCtx
 }
 
 func NewModel(options *opts.Options) (model *Model, err error) {
 	csd, err := bind.NewCStableDiffusion()
 	if err != nil {
 		return
+	}
+
+	if options.Debug {
+		csd.SetLogCallBack(func(level opts.LogLevel, text string) {
+			fmt.Printf("%s", text)
+		})
 	}
 
 	model = &Model{
@@ -97,11 +106,11 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 	return
 }
 
-func (sd *Model) Predict(prompt string, params *opts.FullParams, writer []io.Writer) error {
-	if len(writer) != params.BatchCount {
-		return errors.New("writer count not match batch count")
-	}
+func (sd *Model) GetSystemInfo() string {
+	return sd.cSD.GetSystemInfo()
+}
 
+func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Writer) error {
 	if sd.ctx == nil {
 		return errors.New("model not loaded")
 	}
@@ -125,20 +134,19 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer []io.Wri
 		params.SampleMethod,
 		params.SampleSteps,
 		params.Seed,
-		params.BatchCount,
+		1,
 	)
 
-	if images == nil || len(images) != params.BatchCount {
+	if images == nil || len(images) != 1 {
 		return errors.New("predict failed")
 	}
 
-	for i, img := range images {
-		outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
+	var img = images[0]
+	outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
 
-		err := imageToWriter(outputsImage, params.OutputsImageType, writer[i])
-		if err != nil {
-			return err
-		}
+	err := imageToWriter(outputsImage, params.OutputsImageType, writer)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -177,3 +185,43 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 
 	return
 }
+
+/*
+func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor uint32, writer io.Writer) (err error) {
+	if sd.upscalerCtx == nil {
+		sd.esrganPath = esrganPath
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+	}
+
+	if sd.esrganPath != esrganPath {
+		if sd.upscalerCtx != nil {
+			sd.cSD.FreeUpscalerCtx(sd.upscalerCtx)
+		}
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+	}
+
+	decode, _, err := image.Decode(reader)
+	if err != nil {
+		return
+	}
+
+	println("UPSCALE")
+
+	img := sd.cSD.UpscaleImage(sd.upscalerCtx, decode, upscaleFactor)
+
+	spew.Dump(img)
+
+	println("BYTES")
+
+	outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
+
+	println("WRITE")
+
+	err = imageToWriter(outputsImage, opts.PNG, writer)
+	if err != nil {
+		return
+	}
+
+	return
+}
+*/

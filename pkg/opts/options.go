@@ -12,4 +12,5 @@ type Options struct {
 	RngType               RNGType
 	Schedule              Schedule
 	GpuEnable             bool
+	Debug                 bool
 }

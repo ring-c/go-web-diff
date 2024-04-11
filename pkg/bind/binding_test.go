@@ -1,6 +1,7 @@
 package bind
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -108,11 +109,9 @@ func TestNewCStableDiffusionText2Img(t *testing.T) {
 	diffusion, err := NewCStableDiffusion()
 	r.NoError(err)
 
-	/*
-		diffusion.SetLogCallBack(func(level LogLevel, text string) {
-			fmt.Printf("%s", text)
-		})
-	*/
+	diffusion.SetLogCallBack(func(level opts.LogLevel, text string) {
+		fmt.Printf("%s", text)
+	})
 
 	ctx := diffusion.NewCtx("../../models/dreamshaperXL_v21TurboDPMSDE.safetensors", "", "", "", false, false, true, 4, opts.F16, opts.CUDA_RNG, opts.DEFAULT)
 	defer diffusion.FreeCtx(ctx)
