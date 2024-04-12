@@ -3,11 +3,15 @@ package main
 import (
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 func main() {
+	spew.Config.Indent = "\t"
+
 	options := sd.DefaultOptions
 	options.GpuEnable = true
 	options.Wtype = opts.F16
@@ -23,28 +27,28 @@ func main() {
 		_ = model.Close()
 	}()
 
+	// println(model.GetSystemInfo())
+
+	// err = generate(model)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	err = upscale(model)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+}
+
+func generate(model *sd.Model) (err error) {
 	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/dreamshaperXL_v21TurboDPMSDE.safetensors")
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
-	// println(model.GetSystemInfo())
-
-	err = generate(model)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	// err = upscale(model)
-	// if err != nil {
-	// 	println(err.Error())
-	// 	return
-	// }
-}
-
-func generate(model *sd.Model) (err error) {
 	var file *os.File
 	file, err = os.Create("./output/0.png")
 	if err != nil {
@@ -60,7 +64,7 @@ func generate(model *sd.Model) (err error) {
 	params.Width = 1024
 	params.Height = 1024
 	params.CfgScale = 2
-	params.SampleSteps = 4
+	params.SampleSteps = 32
 	params.SampleMethod = opts.EULER_A
 	params.Seed = 4242
 
@@ -72,7 +76,6 @@ func generate(model *sd.Model) (err error) {
 	return
 }
 
-/*
 func upscale(model *sd.Model) (err error) {
 	fileRead, err := os.Open("./output/0.png")
 	if err != nil {
@@ -99,4 +102,3 @@ func upscale(model *sd.Model) (err error) {
 
 	return
 }
-*/

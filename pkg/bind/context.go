@@ -22,3 +22,18 @@ func (c *CStableDiffusionImpl) FreeCtx(ctx *CStableDiffusionCtx) {
 	ctx = nil
 	runtime.GC()
 }
+
+func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int, wType opts.WType) *CUpScalerCtx {
+	ctx := c.newUpscalerCtx(esrganPath, nThreads, int(wType))
+
+	return &CUpScalerCtx{ctx: ctx}
+}
+
+func (c *CStableDiffusionImpl) FreeUpscalerCtx(ctx *CUpScalerCtx) {
+	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&ctx.ctx))
+	if ptr != nil {
+		c.freeUpscalerCtx(ctx.ctx)
+	}
+	ctx = nil
+	runtime.GC()
+}

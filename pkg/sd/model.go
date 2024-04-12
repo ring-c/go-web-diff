@@ -186,7 +186,6 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 	return
 }
 
-/*
 func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor uint32, writer io.Writer) (err error) {
 	if sd.upscalerCtx == nil {
 		sd.esrganPath = esrganPath
@@ -200,22 +199,12 @@ func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor
 		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
 	}
 
-	decode, _, err := image.Decode(reader)
+	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor)
 	if err != nil {
 		return
 	}
 
-	println("UPSCALE")
-
-	img := sd.cSD.UpscaleImage(sd.upscalerCtx, decode, upscaleFactor)
-
-	spew.Dump(img)
-
-	println("BYTES")
-
 	outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
-
-	println("WRITE")
 
 	err = imageToWriter(outputsImage, opts.PNG, writer)
 	if err != nil {
@@ -224,4 +213,3 @@ func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor
 
 	return
 }
-*/

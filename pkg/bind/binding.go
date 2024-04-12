@@ -1,6 +1,9 @@
 package bind
 
 import (
+	"errors"
+	"image"
+	"io"
 	"os"
 	"unsafe"
 
@@ -23,14 +26,7 @@ type cImage struct {
 	width   uint32
 	height  uint32
 	channel uint32
-	data    unsafe.Pointer
-}
-
-type cDarwinImage struct {
-	width   uint32
-	height  uint32
-	channel uint32
-	data    *byte
+	data    uintptr
 }
 
 type Image struct {
@@ -44,17 +40,17 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	txt2img         func(ctx unsafe.Pointer, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int) unsafe.Pointer
-	sdGetSystemInfo func() unsafe.Pointer
-
-	newSdCtx func(modelPath string, vaePath string, taesdPath string, loraModelDir string, vaeDecodeOnly bool, vaeTiling bool, freeParamsImmediately bool, nThreads int, wType int, rngType int, schedule int) unsafe.Pointer
-
+	txt2img          func(ctx unsafe.Pointer, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int) unsafe.Pointer
+	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
-	img2img          func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
-	freeSdCtx        func(ctx unsafe.Pointer)
-	newUpscalerCtx   func(esrganPath string, nThreads int, wtype int) unsafe.Pointer
-	freeUpscalerCtx  func(ctx unsafe.Pointer)
-	upscale          func(ctx unsafe.Pointer, img unsafe.Pointer, upscaleFactor uint32) uintptr
+
+	img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
+	upscale func(ctx unsafe.Pointer, img unsafe.Pointer, upscaleFactor uint32) uintptr
+
+	newSdCtx        func(modelPath string, vaePath string, taesdPath string, loraModelDir string, vaeDecodeOnly bool, vaeTiling bool, freeParamsImmediately bool, nThreads int, wType int, rngType int, schedule int) unsafe.Pointer
+	freeSdCtx       func(ctx unsafe.Pointer)
+	newUpscalerCtx  func(esrganPath string, nThreads int, wtype int) unsafe.Pointer
+	freeUpscalerCtx func(ctx unsafe.Pointer)
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -69,15 +65,16 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	}
 
 	purego.RegisterLibFunc(&impl.txt2img, libSd, "txt2img")
-
 	purego.RegisterLibFunc(&impl.sdGetSystemInfo, libSd, "sd_get_system_info")
-	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx")
 	purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
+
 	purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
+	purego.RegisterLibFunc(&impl.upscale, libSd, "upscale")
+
+	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx")
 	purego.RegisterLibFunc(&impl.freeSdCtx, libSd, "free_sd_ctx")
 	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
-	purego.RegisterLibFunc(&impl.upscale, libSd, "upscale")
 
 	return &impl, err
 }
@@ -129,52 +126,38 @@ func (c *CStableDiffusionImpl) GetSystemInfo() string {
 	return goString(c.sdGetSystemInfo())
 }
 
-/*
-
-func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int, wType opts.WType) *CUpScalerCtx {
-	ctx := c.newUpscalerCtx(esrganPath, nThreads, int(wType))
-
-	return &CUpScalerCtx{ctx: ctx}
-}
-
-func (c *CStableDiffusionImpl) FreeUpscalerCtx(ctx *CUpScalerCtx) {
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&ctx.ctx))
-	if ptr != nil {
-		c.freeUpscalerCtx(ctx.ctx)
+func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, reader io.Reader, upscaleFactor uint32) (result Image, err error) {
+	decode, _, err := image.Decode(reader)
+	if err != nil {
+		return
 	}
-	ctx = nil
-	runtime.GC()
-}
 
-func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, image image.Image, upscaleFactor uint32) Image {
-	// img := imageToBytes(image)
-	//
-	// var ci = cImage{
-	// 	width:   img.Width,
-	// 	height:  img.Height,
-	// 	channel: img.Channel,
-	// 	data:    unsafe.Pointer(&img.Data[0]),
-	// }
+	var img = imageToBytes(decode)
 
-	println("TEAPOT 1")
+	var ci = &cImage{
+		width:   img.Width,
+		height:  img.Height,
+		channel: img.Channel,
+		data:    uintptr(unsafe.Pointer(&img.Data[0])),
+	}
 
-	uPtr := c.upscale(ctx.ctx, nil, upscaleFactor)
-
-	println("TEAPOT 2")
+	uPtr := c.upscale(ctx.ctx, unsafe.Pointer(&ci), upscaleFactor)
 
 	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&uPtr))
 	if ptr == nil {
-		return Image{}
+		err = errors.New("nil pointer")
+		return
 	}
-	println("TEAPOT 3")
 
 	cimg := (*cImage)(ptr)
 	dataPtr := *(*unsafe.Pointer)(unsafe.Pointer(&cimg.data))
-	return Image{
+
+	result = Image{
 		Width:   cimg.width,
 		Height:  cimg.height,
 		Channel: cimg.channel,
 		Data:    unsafe.Slice((*byte)(dataPtr), cimg.channel*cimg.width*cimg.height),
 	}
+
+	return
 }
-*/
