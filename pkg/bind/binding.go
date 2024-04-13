@@ -2,22 +2,22 @@ package bind
 
 import (
 	"errors"
-	"image"
 	"io"
 	"os"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
+	_ "github.com/ianlancetaylor/cgosymbolizer"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
 type CStableDiffusionCtx struct {
-	ctx unsafe.Pointer
+	ctx uintptr
 }
 
 type CUpScalerCtx struct {
-	ctx unsafe.Pointer
+	ctx uintptr
 }
 
 type CLogCallback func(level opts.LogLevel, text string)
@@ -40,17 +40,21 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	txt2img          func(ctx unsafe.Pointer, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int) unsafe.Pointer
+	txt2img          func(ctx uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int) unsafe.Pointer
 	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
 
 	img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
-	upscale func(ctx unsafe.Pointer, img unsafe.Pointer, upscaleFactor uint32) uintptr
+	upscale func(ctx *CUpScalerCtx, img unsafe.Pointer, upscaleFactor uint32) unsafe.Pointer
 
-	newSdCtx        func(modelPath string, vaePath string, taesdPath string, loraModelDir string, vaeDecodeOnly bool, vaeTiling bool, freeParamsImmediately bool, nThreads int, wType int, rngType int, schedule int) unsafe.Pointer
-	freeSdCtx       func(ctx unsafe.Pointer)
-	newUpscalerCtx  func(esrganPath string, nThreads int, wtype int) unsafe.Pointer
-	freeUpscalerCtx func(ctx unsafe.Pointer)
+	newSdCtx  func(modelPath string) uintptr
+	freeSdCtx func(ctx uintptr)
+
+	newUpscalerCtx  func(esrganPath string, nThreads int, wtype int) uintptr
+	freeUpscalerCtx func(ctx uintptr)
+
+	newSDImage func() uintptr
+	Generate   func(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, withUpscale bool, upscaleScale int) unsafe.Pointer
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -71,10 +75,13 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
 	purego.RegisterLibFunc(&impl.upscale, libSd, "upscale")
 
-	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx")
+	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSdCtx, libSd, "free_sd_ctx")
+
 	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
+
+	purego.RegisterLibFunc(&impl.Generate, libSd, "generate")
 
 	return &impl, err
 }
@@ -126,24 +133,71 @@ func (c *CStableDiffusionImpl) GetSystemInfo() string {
 	return goString(c.sdGetSystemInfo())
 }
 
-func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, reader io.Reader, upscaleFactor uint32) (result Image, err error) {
-	decode, _, err := image.Decode(reader)
-	if err != nil {
-		return
+func (c *CStableDiffusionImpl) UpscaleImage(ctxUp *CUpScalerCtx, reader io.Reader, upscaleFactor uint32, ctxSD *CStableDiffusionCtx) (result Image, err error) {
+	// decode, _, err := image.Decode(reader)
+	// if err != nil {
+	// 	return
+	// }
+	//
+	// var img = imageToBytes(decode)
+
+	println("TEST 1")
+
+	var params = &opts.FullParams{
+		NegativePrompt:   "out of frame, lowers, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
+		CfgScale:         7.0,
+		Width:            512,
+		Height:           512,
+		SampleMethod:     opts.EULER_A,
+		SampleSteps:      20,
+		Strength:         0.4,
+		Seed:             42,
+		BatchCount:       1,
+		OutputsImageType: opts.PNG,
 	}
 
-	var img = imageToBytes(decode)
+	params.Width = 256
+	params.Height = 256
+	params.CfgScale = 2
+	params.SampleSteps = 32
+	params.SampleMethod = opts.EULER_A
+	params.Seed = 4242
 
-	var ci = &cImage{
-		width:   img.Width,
-		height:  img.Height,
-		channel: img.Channel,
-		data:    uintptr(unsafe.Pointer(&img.Data[0])),
-	}
+	var newSDImage = c.Generate(
+		ctxSD,
+		"1girl, indoors, full body",
+		params.NegativePrompt,
+		params.ClipSkip,
+		params.CfgScale,
+		params.Width,
+		params.Height,
+		0,
+		params.SampleSteps,
+		params.Seed,
+		1,
+		false,
+		2,
+	)
 
-	uPtr := c.upscale(ctx.ctx, unsafe.Pointer(&ci), upscaleFactor)
+	// var newSDImage = c.newSDImage()
 
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&uPtr))
+	println("TEST 2")
+	/*
+
+		// var ci = &cImage{
+		// 	width:   img.Width,
+		// 	height:  img.Height,
+		// 	channel: img.Channel,
+		// 	data:    uintptr(unsafe.Pointer(&img.Data[0])),
+		// }
+
+		uPtr := c.upscale(ctx, newSDImage, upscaleFactor)
+		println("TEST 3")
+		spew.Dump(uPtr)
+
+	*/
+
+	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&newSDImage))
 	if ptr == nil {
 		err = errors.New("nil pointer")
 		return
