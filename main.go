@@ -29,6 +29,12 @@ func main() {
 
 	// println(model.GetSystemInfo())
 
+	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/dreamshaperXL_v21TurboDPMSDE.safetensors")
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
 	// err = generate(model)
 	if err != nil {
 		println(err.Error())
@@ -43,12 +49,6 @@ func main() {
 }
 
 func generate(model *sd.Model) (err error) {
-	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/dreamshaperXL_v21TurboDPMSDE.safetensors")
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
 	var file *os.File
 	file, err = os.Create("./output/0.png")
 	if err != nil {

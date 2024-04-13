@@ -4,6 +4,7 @@ go 1.22.2
 
 require (
 	github.com/ebitengine/purego v0.7.1
+	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20240326020559-581a3f7c677f
 	github.com/stretchr/testify v1.9.0
 )
 
