@@ -40,7 +40,7 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	txt2img          func(ctx uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int) unsafe.Pointer
+	txt2img          func(ctx uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, controlCond unsafe.Pointer, controlStrength float32, styleRatio float32, normalizeInput bool, inputIdImagesPath string) unsafe.Pointer
 	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
 
@@ -54,7 +54,7 @@ type CStableDiffusionImpl struct {
 	freeUpscalerCtx func(ctx uintptr)
 
 	newSDImage func() uintptr
-	Generate   func(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, withUpscale bool, upscaleScale int) unsafe.Pointer
+	Generate   func(ctx uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, withUpscale bool, upscaleScale int) unsafe.Pointer
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -99,6 +99,11 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 		sampleSteps,
 		seed,
 		batchCount,
+		nil,
+		0,
+		0,
+		false,
+		"",
 	)
 
 	return goImageSlice(images, batchCount)
@@ -164,7 +169,7 @@ func (c *CStableDiffusionImpl) UpscaleImage(ctxUp *CUpScalerCtx, reader io.Reade
 	params.Seed = 4242
 
 	var newSDImage = c.Generate(
-		ctxSD,
+		ctxSD.ctx,
 		"1girl, indoors, full body",
 		params.NegativePrompt,
 		params.ClipSkip,
