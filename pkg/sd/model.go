@@ -120,12 +120,12 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Write
 		return errors.New("model not loaded")
 	}
 
-	if params.Width%8 != 0 || params.Height%8 != 0 {
-		return errors.New("width and height must be multiples of 8")
-	}
-
 	if params == nil {
 		return errors.New("params is nil")
+	}
+
+	if params.Width%8 != 0 || params.Height%8 != 0 {
+		return errors.New("width and height must be multiples of 8")
 	}
 
 	images := sd.cSD.PredictImage(

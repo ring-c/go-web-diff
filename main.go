@@ -36,11 +36,6 @@ func main() {
 	}
 
 	// err = generate(model)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
 	err = upscale(model)
 	if err != nil {
 		println(err.Error())
@@ -64,7 +59,7 @@ func generate(model *sd.Model) (err error) {
 	params.Width = 1024
 	params.Height = 1024
 	params.CfgScale = 2
-	params.SampleSteps = 32
+	params.SampleSteps = 4
 	params.SampleMethod = opts.EULER_A
 	params.Seed = 4242
 
