@@ -78,7 +78,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSdCtx, libSd, "free_sd_ctx")
 
-	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx_go")
+	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
 
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
@@ -86,7 +86,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	return &impl, err
 }
 
-func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64, batchCount int) image.Image {
+func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64, batchCount int) (result []image.Image) {
 	var cImages = c.txt2img(
 		ctx.ctx,
 		prompt,
@@ -106,10 +106,15 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 		"",
 	)
 
-	var images = goImageSlice(cImages, batchCount)
-	var img = images[0]
+	result = make([]image.Image, 0)
+	for _, img := range goImageSlice(cImages, batchCount) {
+		result = append(
+			result,
+			bytesToImage(img.Data, int(img.Width), int(img.Height)),
+		)
+	}
 
-	return bytesToImage(img.Data, int(img.Width), int(img.Height))
+	return
 }
 
 func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {

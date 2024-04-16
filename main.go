@@ -15,7 +15,7 @@ func main() {
 	options := sd.DefaultOptions
 	options.GpuEnable = true
 	options.Wtype = opts.F16
-	options.Schedule = opts.KARRAS
+	// options.Schedule = opts.KARRAS
 	options.Debug = true
 
 	model, err := sd.NewModel(options)
@@ -29,14 +29,13 @@ func main() {
 
 	// println(model.GetSystemInfo())
 
-	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/dreamshaperXL_v21TurboDPMSDE.safetensors")
+	err = generate(model)
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
-	// err = generate(model)
-	err = upscale(model)
+	// err = upscale(model)
 	if err != nil {
 		println(err.Error())
 		return
@@ -44,26 +43,23 @@ func main() {
 }
 
 func generate(model *sd.Model) (err error) {
-	var file *os.File
-	file, err = os.Create("./output/0.png")
+	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/ponyDiffusionV6XL_v6StartWithThisOne.safetensors")
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
-
 	var params = sd.DefaultFullParams
-	params.Width = 1024
-	params.Height = 1024
-	params.CfgScale = 2
-	params.SampleSteps = 4
+	params.Width = 544
+	params.Height = 960
+	params.ClipSkip = 2
+	params.CfgScale = 7
+	params.SampleSteps = 24
 	params.SampleMethod = opts.EULER_A
-	params.Seed = 4242
+	params.Seed = 42
+	params.BatchCount = 9
 
-	err = model.Predict("1girl, indoors, full body", params, file)
+	err = model.Predict("score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, wolf, forest, full body", params)
 	if err != nil {
 		return
 	}
