@@ -1,6 +1,7 @@
 package opts
 
 type FullParams struct {
+	Prompt           string
 	NegativePrompt   string
 	ClipSkip         int
 	CfgScale         float32

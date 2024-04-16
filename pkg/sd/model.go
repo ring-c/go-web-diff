@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -24,6 +25,7 @@ var DefaultOptions = &opts.Options{
 }
 
 var DefaultFullParams = &opts.FullParams{
+	Prompt:           "1girl",
 	NegativePrompt:   "out of frame, lowers, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
 	CfgScale:         7.0,
 	Width:            512,
@@ -114,7 +116,7 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(prompt string, params *opts.FullParams) (err error) {
+func (sd *Model) Predict(params *opts.FullParams) (err error) {
 	if sd.ctx == nil {
 		return errors.New("model not loaded")
 	}
@@ -129,7 +131,7 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams) (err error) {
 
 	var imgs = sd.cSD.PredictImage(
 		sd.ctx,
-		prompt,
+		params.Prompt,
 		params.NegativePrompt,
 		params.ClipSkip,
 		params.CfgScale,
@@ -141,8 +143,9 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams) (err error) {
 		params.BatchCount,
 	)
 
+	var timeSave = time.Now().Unix()
 	for i, img := range imgs {
-		var filename = fmt.Sprintf("./output/%d-%d.png", params.Seed, i)
+		var filename = fmt.Sprintf("./output/%d-%d-%d.png", params.Seed, timeSave, i)
 
 		var file *os.File
 		file, err = os.Create(filename)

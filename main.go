@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 
@@ -35,7 +37,7 @@ func main() {
 		return
 	}
 
-	// err = upscale(model)
+	err = upscale(model)
 	if err != nil {
 		println(err.Error())
 		return
@@ -43,23 +45,17 @@ func main() {
 }
 
 func generate(model *sd.Model) (err error) {
-	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/ponyDiffusionV6XL_v6StartWithThisOne.safetensors")
+	params, err := sd.GetInput()
 	if err != nil {
-		println(err.Error())
 		return
 	}
 
-	var params = sd.DefaultFullParams
-	params.Width = 544
-	params.Height = 960
-	params.ClipSkip = 2
-	params.CfgScale = 7
-	params.SampleSteps = 24
-	params.SampleMethod = opts.EULER_A
-	params.Seed = 42
-	params.BatchCount = 9
+	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/ponyDiffusionV6XL_v6StartWithThisOne.safetensors")
+	if err != nil {
+		return
+	}
 
-	err = model.Predict("score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, wolf, forest, full body", params)
+	err = model.Predict(params)
 	if err != nil {
 		return
 	}
@@ -68,27 +64,50 @@ func generate(model *sd.Model) (err error) {
 }
 
 func upscale(model *sd.Model) (err error) {
-	fileRead, err := os.Open("./output/0.png")
+	var outputDir = "./output/"
+
+	dir, err := os.ReadDir(outputDir)
 	if err != nil {
 		return
 	}
 
-	defer func() {
-		_ = fileRead.Close()
-	}()
+	for _, file := range dir {
+		if strings.HasPrefix(file.Name(), "u-") {
+			continue
+		}
 
-	fileWrite, err := os.Create("./output/1.png")
-	if err != nil {
-		return
-	}
+		var filename = filepath.Join(outputDir, file.Name())
+		var filenameOut = filepath.Join(outputDir, "u-"+file.Name())
 
-	defer func() {
-		_ = fileWrite.Close()
-	}()
+		var fileRead *os.File
+		fileRead, err = os.Open(filename)
+		if err != nil {
+			return
+		}
 
-	err = model.UpscaleImage(fileRead, "/media/ed/files/sd/models/ESRGAN/RealESRGAN_x4plus_anime_6B.pth", 2, fileWrite)
-	if err != nil {
-		return
+		defer func() {
+			_ = fileRead.Close()
+		}()
+
+		var fileWrite *os.File
+		fileWrite, err = os.Create(filenameOut)
+		if err != nil {
+			return
+		}
+
+		defer func() {
+			_ = fileWrite.Close()
+		}()
+
+		err = model.UpscaleImage(fileRead, "/media/ed/files/sd/models/ESRGAN/RealESRGAN_x4plus_anime_6B.pth", 2, fileWrite)
+		if err != nil {
+			return
+		}
+
+		err = os.Remove(filename)
+		if err != nil {
+			return
+		}
 	}
 
 	return
