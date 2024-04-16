@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
 	"image/jpeg"
 	"image/png"
 	"io"
@@ -115,7 +114,7 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Writer) error {
+func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Writer) (err error) {
 	if sd.ctx == nil {
 		return errors.New("model not loaded")
 	}
@@ -128,7 +127,7 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Write
 		return errors.New("width and height must be multiples of 8")
 	}
 
-	images := sd.cSD.PredictImage(
+	var img = sd.cSD.PredictImage(
 		sd.ctx,
 		prompt,
 		params.NegativePrompt,
@@ -142,36 +141,12 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Write
 		1,
 	)
 
-	if images == nil || len(images) != 1 {
-		return errors.New("predict failed")
-	}
-
-	var img = images[0]
-	outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
-
-	err := imageToWriter(outputsImage, params.OutputsImageType, writer)
+	err = imageToWriter(img, params.OutputsImageType, writer)
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
-}
-
-func bytesToImage(byteData []byte, width, height int) image.Image {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			idx := (y*width + x) * 3
-			img.Set(x, y, color.RGBA{
-				R: byteData[idx],
-				G: byteData[idx+1],
-				B: byteData[idx+2],
-				A: 255,
-			})
-		}
-	}
-	return img
+	return
 }
 
 func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io.Writer) (err error) {
@@ -204,14 +179,12 @@ func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor
 		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
 	}
 
-	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor, sd.ctx)
+	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor)
 	if err != nil {
 		return
 	}
 
-	outputsImage := bytesToImage(img.Data, int(img.Width), int(img.Height))
-
-	err = imageToWriter(outputsImage, opts.PNG, writer)
+	err = imageToWriter(img, opts.PNG, writer)
 	if err != nil {
 		return
 	}
