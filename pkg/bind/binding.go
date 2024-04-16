@@ -54,7 +54,7 @@ type CStableDiffusionImpl struct {
 	freeUpscalerCtx func(ctx uintptr)
 
 	newSDImage func() uintptr
-	Generate   func(ctx uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, withUpscale bool, upscaleScale int) unsafe.Pointer
+	Generate   func(ctx uintptr, ctxUP uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, withUpscale bool, upscaleScale int) unsafe.Pointer
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -78,7 +78,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSdCtx, libSd, "free_sd_ctx")
 
-	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
+	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx_go")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
 
 	purego.RegisterLibFunc(&impl.Generate, libSd, "generate")
@@ -170,6 +170,7 @@ func (c *CStableDiffusionImpl) UpscaleImage(ctxUp *CUpScalerCtx, reader io.Reade
 
 	var newSDImage = c.Generate(
 		ctxSD.ctx,
+		ctxUp.ctx,
 		"1girl, indoors, full body",
 		params.NegativePrompt,
 		params.ClipSkip,
