@@ -114,7 +114,7 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Writer) (err error) {
+func (sd *Model) Predict(prompt string, params *opts.FullParams) (err error) {
 	if sd.ctx == nil {
 		return errors.New("model not loaded")
 	}
@@ -127,7 +127,7 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Write
 		return errors.New("width and height must be multiples of 8")
 	}
 
-	var img = sd.cSD.PredictImage(
+	var imgs = sd.cSD.PredictImage(
 		sd.ctx,
 		prompt,
 		params.NegativePrompt,
@@ -138,12 +138,24 @@ func (sd *Model) Predict(prompt string, params *opts.FullParams, writer io.Write
 		params.SampleMethod,
 		params.SampleSteps,
 		params.Seed,
-		1,
+		params.BatchCount,
 	)
 
-	err = imageToWriter(img, params.OutputsImageType, writer)
-	if err != nil {
-		return
+	for i, img := range imgs {
+		var filename = fmt.Sprintf("./output/%d-%d.png", params.Seed, i)
+
+		var file *os.File
+		file, err = os.Create(filename)
+		if err != nil {
+			return
+		}
+
+		err = imageToWriter(img, params.OutputsImageType, file)
+		if err != nil {
+			return
+		}
+
+		_ = file.Close()
 	}
 
 	return
