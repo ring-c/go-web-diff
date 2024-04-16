@@ -192,19 +192,17 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 }
 
 func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor uint32, writer io.Writer) (err error) {
-	/*
-		if sd.upscalerCtx == nil {
-			sd.esrganPath = esrganPath
-			sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
-		}
+	if sd.upscalerCtx == nil {
+		sd.esrganPath = esrganPath
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+	}
 
-		if sd.esrganPath != esrganPath {
-			if sd.upscalerCtx != nil {
-				sd.cSD.FreeUpscalerCtx(sd.upscalerCtx)
-			}
-			sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+	if sd.esrganPath != esrganPath {
+		if sd.upscalerCtx != nil {
+			sd.cSD.FreeUpscalerCtx(sd.upscalerCtx)
 		}
-	*/
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+	}
 
 	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor, sd.ctx)
 	if err != nil {
