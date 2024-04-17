@@ -7,7 +7,7 @@ type Options struct {
 	VaeDecodeOnly         bool
 	VaeTiling             bool
 	FreeParamsImmediately bool
-	Threads               int
+	Threads               int16
 	Wtype                 WType
 	RngType               RNGType
 	Schedule              Schedule

@@ -11,7 +11,7 @@ type NewSDContextParams struct {
 	ModelPath    string
 	LoraModelDir string
 	VaePath      string
-	NThreads     uint16
+	NThreads     int16
 	WType        opts.WType
 	RngType      opts.RNGType
 	Schedule     opts.Schedule
@@ -29,7 +29,7 @@ type NewSDContextParams struct {
 	KeepVaeOnCpu          bool
 }
 
-func (c *CStableDiffusionImpl) NewSDContext(params NewSDContextParams) *CStableDiffusionCtx {
+func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStableDiffusionCtx {
 	var paramsC = c.newSDContextParams(
 		params.ModelPath,
 		params.LoraModelDir,
@@ -52,7 +52,7 @@ func (c *CStableDiffusionImpl) FreeSDContext(ctx *CStableDiffusionCtx) {
 	ctx = nil
 }
 
-func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int, wType opts.WType) *CUpScalerCtx {
+func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int16, wType opts.WType) *CUpScalerCtx {
 	return &CUpScalerCtx{
 		ctx: c.newUpscalerCtx(esrganPath, nThreads, int(wType)),
 	}
