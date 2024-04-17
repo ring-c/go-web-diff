@@ -17,7 +17,7 @@ func main() {
 	options := sd.DefaultOptions
 	options.GpuEnable = true
 	options.Wtype = opts.F16
-	// options.Schedule = opts.KARRAS
+	options.Schedule = opts.KARRAS
 	options.Debug = true
 
 	model, err := sd.NewModel(options)
