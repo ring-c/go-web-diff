@@ -46,14 +46,13 @@ type CStableDiffusionImpl struct {
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
 
 	// img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
-	// upscale func(ctx *CUpScalerCtx, img unsafe.Pointer, upscaleFactor uint32) unsafe.Pointer
 
 	newSDContext          func(params unsafe.Pointer) unsafe.Pointer
-	newSDContextParams    func(modelPath, loraModelDir, vaePath string, nThreads uint16, wType opts.WType, rngType opts.RNGType, schedule opts.Schedule) unsafe.Pointer
+	newSDContextParams    func(modelPath, loraModelDir, vaePath string, nThreads int16, wType opts.WType, rngType opts.RNGType, schedule opts.Schedule) unsafe.Pointer
 	newSDContextParamsSet func()
 	freeSDContext         func(ctx unsafe.Pointer)
 
-	newUpscalerCtx  func(esrganPath string, nThreads int, wtype int) unsafe.Pointer
+	newUpscalerCtx  func(esrganPath string, nThreads int16, wtype int) unsafe.Pointer
 	freeUpscalerCtx func(ctx unsafe.Pointer)
 
 	Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
@@ -75,7 +74,6 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
 
 	// purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
-	// purego.RegisterLibFunc(&impl.upscale, libSd, "upscale")
 
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")

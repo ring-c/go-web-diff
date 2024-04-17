@@ -78,7 +78,7 @@ func (sd *Model) Close() error {
 
 func (sd *Model) LoadFromFile(path string) (err error) {
 	if sd.ctx != nil {
-		sd.cSD.FreeCtx(sd.ctx)
+		sd.cSD.FreeSDContext(sd.ctx)
 		sd.ctx = nil
 		log.Printf("model already loaded, free old model")
 	}
@@ -89,26 +89,21 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 		return
 	}
 
-	sd.ctx = sd.cSD.NewCtx(
-		path,
-		sd.options.VaePath,
-		"",
-		sd.options.TaesdPath,
-		sd.options.LoraModelDir,
-		"",
-		"",
-		sd.options.VaeDecodeOnly,
-		sd.options.VaeTiling,
-		sd.options.FreeParamsImmediately,
-		sd.options.Threads,
-		sd.options.Wtype,
-		sd.options.RngType,
-		sd.options.Schedule,
-		false,
-		false,
-		false,
-	)
+	var params = &bind.NewSDContextParams{
+		ModelPath:             path,
+		LoraModelDir:          sd.options.LoraModelDir,
+		VaePath:               sd.options.VaePath,
+		TAESDPath:             sd.options.TaesdPath,
+		VaeDecodeOnly:         sd.options.VaeDecodeOnly,
+		VaeTiling:             sd.options.VaeTiling,
+		FreeParamsImmediately: sd.options.FreeParamsImmediately,
+		NThreads:              sd.options.Threads,
+		WType:                 sd.options.Wtype,
+		RngType:               sd.options.RngType,
+		Schedule:              sd.options.Schedule,
+	}
 
+	sd.ctx = sd.cSD.NewSDContext(params)
 	return
 }
 
