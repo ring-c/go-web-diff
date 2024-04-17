@@ -35,9 +35,9 @@ func GetInput() (params *opts.FullParams, err error) {
 	params.Height = 960
 	params.ClipSkip = 2
 	params.CfgScale = 7
-	params.SampleSteps = 22
+	params.SampleSteps = 32
 	params.SampleMethod = opts.EULER_A
-	params.BatchCount = 9
+	params.BatchCount = 4
 
 	return
 }

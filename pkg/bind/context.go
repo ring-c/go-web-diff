@@ -7,19 +7,49 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-func (c *CStableDiffusionImpl) NewCtx(modelPath string, vaePath string, controlNetPath string, taesdPath string, loraModelDir string, embedDir string, idEmbedDir string, vaeDecodeOnly bool, vaeTiling bool, freeParamsImmediately bool, nThreads int, wType opts.WType, rngType opts.RNGType, schedule opts.Schedule, keepClipOnCpu bool, keepControlNetCpu bool, keepVaeOnCpu bool) *CStableDiffusionCtx {
+type NewSDContextParams struct {
+	ModelPath    string
+	LoraModelDir string
+	VaePath      string
+	NThreads     uint16
+	WType        opts.WType
+	RngType      opts.RNGType
+	Schedule     opts.Schedule
+
+	// newSDContextParamsSet
+	TAESDPath             string
+	ControlNetPath        string
+	EmbedDir              string
+	IDEmbedDir            string
+	VaeDecodeOnly         bool
+	VaeTiling             bool
+	FreeParamsImmediately bool
+	KeepClipOnCpu         bool
+	KeepControlNetCpu     bool
+	KeepVaeOnCpu          bool
+}
+
+func (c *CStableDiffusionImpl) NewSDContext(params NewSDContextParams) *CStableDiffusionCtx {
+	var paramsC = c.newSDContextParams(
+		params.ModelPath,
+		params.LoraModelDir,
+		params.VaePath,
+		params.NThreads,
+		params.WType,
+		params.RngType,
+		params.Schedule,
+	)
+
 	return &CStableDiffusionCtx{
-		ctx: c.newSdCtx(modelPath),
+		ctx: c.newSDContext(paramsC),
 	}
 }
 
-func (c *CStableDiffusionImpl) FreeCtx(ctx *CStableDiffusionCtx) {
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&ctx.ctx))
-	if ptr != nil {
-		c.freeSdCtx(ctx.ctx)
+func (c *CStableDiffusionImpl) FreeSDContext(ctx *CStableDiffusionCtx) {
+	if ctx != nil && ctx.ctx != nil {
+		c.freeSDContext(ctx.ctx)
 	}
 	ctx = nil
-	runtime.GC()
 }
 
 func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int, wType opts.WType) *CUpScalerCtx {

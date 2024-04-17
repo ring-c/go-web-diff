@@ -48,8 +48,10 @@ type CStableDiffusionImpl struct {
 	// img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
 	// upscale func(ctx *CUpScalerCtx, img unsafe.Pointer, upscaleFactor uint32) unsafe.Pointer
 
-	newSdCtx  func(modelPath string) unsafe.Pointer
-	freeSdCtx func(ctx unsafe.Pointer)
+	newSDContext          func(params unsafe.Pointer) unsafe.Pointer
+	newSDContextParams    func(modelPath, loraModelDir, vaePath string, nThreads uint16, wType opts.WType, rngType opts.RNGType, schedule opts.Schedule) unsafe.Pointer
+	newSDContextParamsSet func()
+	freeSDContext         func(ctx unsafe.Pointer)
 
 	newUpscalerCtx  func(esrganPath string, nThreads int, wtype int) unsafe.Pointer
 	freeUpscalerCtx func(ctx unsafe.Pointer)
@@ -75,8 +77,10 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	// purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
 	// purego.RegisterLibFunc(&impl.upscale, libSd, "upscale")
 
-	purego.RegisterLibFunc(&impl.newSdCtx, libSd, "new_sd_ctx_go")
-	purego.RegisterLibFunc(&impl.freeSdCtx, libSd, "free_sd_ctx")
+	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
+	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
+	purego.RegisterLibFunc(&impl.newSDContextParams, libSd, "new_sd_ctx_params")
+	purego.RegisterLibFunc(&impl.newSDContextParamsSet, libSd, "new_sd_ctx_params_set")
 
 	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
