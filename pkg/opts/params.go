@@ -1,16 +1,18 @@
 package opts
 
-type FullParams struct {
-	Prompt           string
-	NegativePrompt   string
-	ClipSkip         int
-	CfgScale         float32
-	Width            int
-	Height           int
-	SampleMethod     SampleMethod
-	SampleSteps      int
-	Strength         float32
-	Seed             int64
-	BatchCount       int
-	OutputsImageType OutputsImageType
+type Params struct {
+	ModelPath string `json:"model_path"`
+
+	Prompt           string           `json:"prompt"`
+	NegativePrompt   string           `json:"negative_prompt"`
+	ClipSkip         int              `json:"clip_skip"`
+	CfgScale         float32          `json:"cfg_scale"`
+	Width            int              `json:"width"`
+	Height           int              `json:"height"`
+	SampleMethod     SampleMethod     `json:"sample_method"`
+	SampleSteps      int              `json:"sample_steps"`
+	Strength         float32          `json:"strength"`
+	Seed             int64            `json:"seed"`
+	BatchCount       int              `json:"batch_count"`
+	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 }

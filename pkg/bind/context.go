@@ -41,13 +41,14 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 	)
 
 	return &CStableDiffusionCtx{
-		ctx: c.newSDContext(paramsC),
+		Path: params.ModelPath,
+		CTX:  c.newSDContext(paramsC),
 	}
 }
 
 func (c *CStableDiffusionImpl) FreeSDContext(ctx *CStableDiffusionCtx) {
-	if ctx != nil && ctx.ctx != nil {
-		c.freeSDContext(ctx.ctx)
+	if ctx != nil && ctx.CTX != nil {
+		c.freeSDContext(ctx.CTX)
 	}
 	ctx = nil
 }

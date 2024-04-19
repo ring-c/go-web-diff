@@ -14,7 +14,8 @@ import (
 )
 
 type CStableDiffusionCtx struct {
-	ctx unsafe.Pointer
+	Path string
+	CTX  unsafe.Pointer
 }
 
 type CUpScalerCtx struct {
@@ -90,7 +91,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 
 func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64, batchCount int) (result []image.Image) {
 	var cImages = c.txt2img(
-		ctx.ctx,
+		ctx.CTX,
 		prompt,
 		negativePrompt,
 		clipSkip,

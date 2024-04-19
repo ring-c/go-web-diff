@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"log"
 	"os"
 	"time"
 
@@ -22,20 +21,6 @@ var DefaultOptions = &opts.Options{
 	RngType:               opts.CUDA_RNG,
 	Wtype:                 opts.F32,
 	Schedule:              opts.DEFAULT,
-}
-
-var DefaultFullParams = &opts.FullParams{
-	Prompt:           "1girl",
-	NegativePrompt:   "out of frame, lowers, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
-	CfgScale:         7.0,
-	Width:            512,
-	Height:           512,
-	SampleMethod:     opts.EULER_A,
-	SampleSteps:      20,
-	Strength:         0.4,
-	Seed:             42,
-	BatchCount:       1,
-	OutputsImageType: opts.PNG,
 }
 
 type Model struct {
@@ -78,9 +63,12 @@ func (sd *Model) Close() error {
 
 func (sd *Model) LoadFromFile(path string) (err error) {
 	if sd.ctx != nil {
+		if sd.ctx.Path == path {
+			return
+		}
+
 		sd.cSD.FreeSDContext(sd.ctx)
 		sd.ctx = nil
-		log.Printf("model already loaded, free old model")
 	}
 
 	_, err = os.Stat(path)
@@ -111,7 +99,7 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(params *opts.FullParams) (err error) {
+func (sd *Model) Predict(params *opts.Params) (err error) {
 	if sd.ctx == nil {
 		return errors.New("model not loaded")
 	}
