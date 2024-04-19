@@ -38,7 +38,7 @@ func Generate(c echo.Context) (err error) {
 
 	spew.Dump(params)
 
-	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/ponyDiffusionV6XL_v6StartWithThisOne.safetensors")
+	err = model.LoadFromFile(params.ModelPath)
 	if err != nil {
 		return
 	}

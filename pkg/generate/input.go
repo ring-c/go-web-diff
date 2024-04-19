@@ -4,36 +4,28 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
-	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
-type inputFile struct {
-	Prompt         string `json:"prompt"`
-	NegativePrompt string `json:"prompt_neg"`
-	Seed           int64  `json:"seed"`
-}
+func getInput(c echo.Context) (params *opts.Params, err error) {
+	params = &opts.Params{
+		Prompt:           "1girl",
+		NegativePrompt:   "out of frame, lowers, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
+		CfgScale:         7.0,
+		ClipSkip:         2,
+		Width:            512,
+		Height:           512,
+		SampleMethod:     opts.EULER_A,
+		SampleSteps:      24,
+		Strength:         0.4,
+		Seed:             42,
+		BatchCount:       1,
+		OutputsImageType: opts.PNG,
+	}
 
-func getInput(c echo.Context) (params *opts.FullParams, err error) {
-	params = sd.DefaultFullParams
-
-	var data inputFile
-
-	err = c.Bind(&data)
+	err = c.Bind(params)
 	if err != nil {
 		return
 	}
-
-	params.Prompt = data.Prompt
-	params.NegativePrompt = data.NegativePrompt
-	params.Seed = data.Seed
-
-	params.Width = 544
-	params.Height = 960
-	params.ClipSkip = 2
-	params.CfgScale = 7
-	params.SampleSteps = 32
-	params.SampleMethod = opts.EULER_A
-	params.BatchCount = 4
 
 	return
 }
