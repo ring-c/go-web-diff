@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -30,24 +31,12 @@ func Generate(c echo.Context) (err error) {
 
 	// println(model.GetSystemInfo())
 
-	err = generate(model)
+	params, err := getInput(c)
 	if err != nil {
 		return
 	}
 
-	err = upscale(model)
-	if err != nil {
-		return
-	}
-
-	return c.JSON(http.StatusOK, "OK")
-}
-
-func generate(model *sd.Model) (err error) {
-	params, err := sd.GetInput()
-	if err != nil {
-		return
-	}
+	spew.Dump(params)
 
 	err = model.LoadFromFile("/media/ed/files/sd/models/Stable-diffusion/ponyDiffusionV6XL_v6StartWithThisOne.safetensors")
 	if err != nil {
@@ -59,7 +48,12 @@ func generate(model *sd.Model) (err error) {
 		return
 	}
 
-	return
+	// err = upscale(model)
+	// if err != nil {
+	// 	return
+	// }
+
+	return c.JSON(http.StatusOK, "OK")
 }
 
 func upscale(model *sd.Model) (err error) {

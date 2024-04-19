@@ -1,10 +1,10 @@
-package sd
+package generate
 
 import (
-	"encoding/json"
-	"os"
+	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
+	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 type inputFile struct {
@@ -13,23 +13,19 @@ type inputFile struct {
 	Seed           int64  `json:"seed"`
 }
 
-func GetInput() (params *opts.FullParams, err error) {
-	params = DefaultFullParams
+func getInput(c echo.Context) (params *opts.FullParams, err error) {
+	params = sd.DefaultFullParams
 
-	data, err := os.ReadFile("input.json")
+	var data inputFile
+
+	err = c.Bind(&data)
 	if err != nil {
 		return
 	}
 
-	var in inputFile
-	err = json.Unmarshal(data, &in)
-	if err != nil {
-		return
-	}
-
-	params.Prompt = in.Prompt
-	params.NegativePrompt = in.NegativePrompt
-	params.Seed = in.Seed
+	params.Prompt = data.Prompt
+	params.NegativePrompt = data.NegativePrompt
+	params.Seed = data.Seed
 
 	params.Width = 544
 	params.Height = 960
