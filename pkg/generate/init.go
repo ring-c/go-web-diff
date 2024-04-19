@@ -6,5 +6,5 @@ import (
 
 func Routes(e *echo.Echo) {
 	var r = e.Group("/generate")
-	r.GET("", Generate)
+	r.POST("", Generate)
 }
