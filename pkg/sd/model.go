@@ -14,15 +14,6 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-var DefaultOptions = &opts.Options{
-	Threads:               -1, // auto
-	VaeDecodeOnly:         true,
-	FreeParamsImmediately: true,
-	RngType:               opts.CUDA_RNG,
-	Wtype:                 opts.F32,
-	Schedule:              opts.DEFAULT,
-}
-
 type Model struct {
 	options *opts.Options
 
@@ -57,8 +48,19 @@ func NewModel(options *opts.Options) (model *Model, err error) {
 	return
 }
 
-func (sd *Model) Close() error {
-	return sd.cSD.Close()
+func (sd *Model) Close() {
+	if sd.ctx != nil {
+		sd.cSD.FreeSDContext(sd.ctx)
+		sd.ctx = nil
+	}
+
+	var err = sd.cSD.Close()
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	return
 }
 
 func (sd *Model) LoadFromFile(path string) (err error) {
@@ -86,7 +88,7 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 		VaeTiling:             sd.options.VaeTiling,
 		FreeParamsImmediately: sd.options.FreeParamsImmediately,
 		NThreads:              sd.options.Threads,
-		WType:                 sd.options.Wtype,
+		WType:                 sd.options.WType,
 		RngType:               sd.options.RngType,
 		Schedule:              sd.options.Schedule,
 	}
@@ -164,19 +166,27 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 	return
 }
 
-func (sd *Model) UpscaleImage(reader io.Reader, esrganPath string, upscaleFactor uint32, writer io.Writer) (err error) {
+func (sd *Model) LoadUpscaleModel(esrganPath string) {
 	if sd.upscalerCtx == nil {
 		sd.esrganPath = esrganPath
-		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.WType)
 	}
 
 	if sd.esrganPath != esrganPath {
 		if sd.upscalerCtx != nil {
 			sd.cSD.FreeUpscalerCtx(sd.upscalerCtx)
 		}
-		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.Wtype)
+		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.WType)
 	}
+}
 
+func (sd *Model) CloseUpscaleModel() {
+	if sd.upscalerCtx != nil {
+		sd.cSD.FreeUpscalerCtx(sd.upscalerCtx)
+	}
+}
+
+func (sd *Model) UpscaleImage(reader io.Reader, upscaleFactor uint32, writer io.Writer) (err error) {
 	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor)
 	if err != nil {
 		return

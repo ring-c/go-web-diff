@@ -6,57 +6,59 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
-	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 func Generate(c echo.Context) (err error) {
-	options := sd.DefaultOptions
-	options.GpuEnable = true
-	options.Wtype = opts.F16
-	options.Schedule = opts.KARRAS
-	options.Debug = true
-
-	model, err := sd.NewModel(options)
+	in, err := getInput(c)
 	if err != nil {
 		println(err.Error())
 		return
 	}
-	defer func() {
-		_ = model.Close()
-	}()
+
+	// spew.Dump(in)
+
+	model, err := sd.NewModel(&in.Options)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	defer model.Close()
 
 	// println(model.GetSystemInfo())
 
-	params, err := getInput(c)
+	err = model.LoadFromFile(in.Params.ModelPath)
 	if err != nil {
+		println(err.Error())
 		return
 	}
 
-	spew.Dump(params)
-
-	err = model.LoadFromFile(params.ModelPath)
+	err = model.Predict(&in.Params)
 	if err != nil {
+		println(err.Error())
 		return
 	}
 
-	err = model.Predict(params)
-	if err != nil {
-		return
+	if in.Params.WithUpscale {
+		err = upscale(in.Params.UpscalePath, model)
+		if err != nil {
+			println(err.Error())
+			return
+		}
 	}
 
-	// err = upscale(model)
-	// if err != nil {
-	// 	return
-	// }
+	println("DONE")
 
-	return c.JSON(http.StatusOK, "OK")
+	_ = c.JSON(http.StatusOK, "OK")
+	return
 }
 
-func upscale(model *sd.Model) (err error) {
+func upscale(path string, model *sd.Model) (err error) {
+	model.LoadUpscaleModel(path)
+	defer model.CloseUpscaleModel()
+
 	var outputDir = "./output/"
 
 	dir, err := os.ReadDir(outputDir)
@@ -92,7 +94,7 @@ func upscale(model *sd.Model) (err error) {
 			_ = fileWrite.Close()
 		}()
 
-		err = model.UpscaleImage(fileRead, "/media/ed/files/sd/models/ESRGAN/RealESRGAN_x4plus_anime_6B.pth", 2, fileWrite)
+		err = model.UpscaleImage(fileRead, 2, fileWrite)
 		if err != nil {
 			return
 		}
