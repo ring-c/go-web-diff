@@ -24,6 +24,7 @@ func main() {
 
 	// Setup
 	e := echo.New()
+	e.HideBanner = true
 	e.Logger.SetLevel(log.INFO)
 
 	generate.Routes(e)
