@@ -6,14 +6,14 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-type inputData struct {
+type InputData struct {
 	Options opts.Options `json:"options"`
 	Params  opts.Params  `json:"params"`
 }
 
-func getInput(c echo.Context) (data *inputData, err error) {
+func getInput(c echo.Context) (data *InputData, err error) {
 	// Defaults
-	data = &inputData{
+	data = &InputData{
 		Options: opts.Options{
 			Threads:               -1,            // auto
 			VaeDecodeOnly:         true,          //
@@ -25,6 +25,7 @@ func getInput(c echo.Context) (data *inputData, err error) {
 			Debug:                 true,          //
 		},
 		Params: opts.Params{
+			OutputDir:        "./output/",
 			Prompt:           "1girl",
 			NegativePrompt:   "out of frame, lowers, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature",
 			CfgScale:         7.0,
