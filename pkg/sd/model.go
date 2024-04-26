@@ -114,7 +114,7 @@ func (sd *Model) Predict(params *opts.Params) (err error) {
 		return errors.New("width and height must be multiples of 8")
 	}
 
-	var imgs = sd.cSD.PredictImage(
+	var images = sd.cSD.PredictImage(
 		sd.ctx,
 		params.Prompt,
 		params.NegativePrompt,
@@ -129,7 +129,7 @@ func (sd *Model) Predict(params *opts.Params) (err error) {
 	)
 
 	var timeSave = time.Now().Unix()
-	for i, img := range imgs {
+	for i, img := range images {
 		var filename = fmt.Sprintf("./output/%d-%d-%d.png", params.Seed, timeSave, i)
 
 		var file *os.File
