@@ -1,10 +1,10 @@
 package generate
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -35,44 +35,35 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	err = model.Predict(&in.Params)
+	filenames, err := model.Predict(&in.Params)
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
 	if in.Params.WithUpscale {
-		err = upscale(in.Params.UpscalePath, model)
+		err = upscale(model, in.Params.UpscalePath, in.Params.DeleteUpscaled, filenames)
 		if err != nil {
 			println(err.Error())
 			return
 		}
 	}
 
-	println("DONE")
+	fmt.Printf("\nDONE\n")
 
 	_ = c.JSON(http.StatusOK, "OK")
 	return
 }
 
-func upscale(path string, model *sd.Model) (err error) {
+func upscale(model *sd.Model, path string, deleteUpscaled bool, filenames []string) (err error) {
 	model.LoadUpscaleModel(path)
 	defer model.CloseUpscaleModel()
 
 	var outputDir = "./output/"
 
-	dir, err := os.ReadDir(outputDir)
-	if err != nil {
-		return
-	}
-
-	for _, file := range dir {
-		if strings.HasPrefix(file.Name(), "u-") {
-			continue
-		}
-
-		var filename = filepath.Join(outputDir, file.Name())
-		var filenameOut = filepath.Join(outputDir, "u-"+file.Name())
+	for _, file := range filenames {
+		var filename = filepath.Join(outputDir, file)
+		var filenameOut = filepath.Join(outputDir, "u-"+file)
 
 		var fileRead *os.File
 		fileRead, err = os.Open(filename)
@@ -99,9 +90,11 @@ func upscale(path string, model *sd.Model) (err error) {
 			return
 		}
 
-		err = os.Remove(filename)
-		if err != nil {
-			return
+		if deleteUpscaled {
+			err = os.Remove(filename)
+			if err != nil {
+				return
+			}
 		}
 	}
 

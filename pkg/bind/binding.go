@@ -89,7 +89,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	return &impl, err
 }
 
-func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64, batchCount int) (result []image.Image) {
+func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result image.Image) {
 	var cImages = c.txt2img(
 		ctx.CTX,
 		prompt,
@@ -101,7 +101,7 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 		int(sampleMethod),
 		sampleSteps,
 		seed,
-		batchCount,
+		1,
 		nil,
 		0,
 		0,
@@ -109,15 +109,8 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 		"",
 	)
 
-	result = make([]image.Image, 0)
-	for _, img := range goImageSlice(cImages, batchCount) {
-		result = append(
-			result,
-			bytesToImage(img.Data, int(img.Width), int(img.Height)),
-		)
-	}
-
-	return
+	var img = goImageSlice(cImages, 1)
+	return bytesToImage(img[0].Data, int(img[0].Width), int(img[0].Height))
 }
 
 func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {

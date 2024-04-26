@@ -3,8 +3,9 @@ package opts
 type Params struct {
 	ModelPath string `json:"model_path"`
 
-	UpscalePath string `json:"upscale_path"`
-	WithUpscale bool   `json:"with_upscale"`
+	UpscalePath    string `json:"upscale_path"`
+	WithUpscale    bool   `json:"with_upscale"`
+	DeleteUpscaled bool   `json:"delete_upscaled"`
 
 	Prompt           string           `json:"prompt"`
 	NegativePrompt   string           `json:"negative_prompt"`
