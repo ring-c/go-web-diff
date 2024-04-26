@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"math/rand"
 	"os"
 	"time"
 
@@ -101,49 +102,64 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(params *opts.Params) (err error) {
+func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
+	filenames = make([]string, 0)
 	if sd.ctx == nil {
-		return errors.New("model not loaded")
+		err = errors.New("model not loaded")
+		return
 	}
 
 	if params == nil {
-		return errors.New("params is nil")
+		err = errors.New("params is nil")
+		return
 	}
 
 	if params.Width%8 != 0 || params.Height%8 != 0 {
-		return errors.New("width and height must be multiples of 8")
+		err = errors.New("width and height must be multiples of 8")
+		return
 	}
 
-	var images = sd.cSD.PredictImage(
-		sd.ctx,
-		params.Prompt,
-		params.NegativePrompt,
-		params.ClipSkip,
-		params.CfgScale,
-		params.Width,
-		params.Height,
-		params.SampleMethod,
-		params.SampleSteps,
-		params.Seed,
-		params.BatchCount,
-	)
+	var seed = params.Seed
+	if seed == -1 {
+		seed = rand.Int63()
+	}
 
 	var timeSave = time.Now().Unix()
-	for i, img := range images {
-		var filename = fmt.Sprintf("./output/%d-%d-%d.png", params.Seed, timeSave, i)
+	for i := 0; i < params.BatchCount; i++ {
+		fmt.Printf("\nGenerating for seed %d\n\n", seed)
 
+		var data = sd.cSD.PredictImage(
+			sd.ctx,
+			params.Prompt,
+			params.NegativePrompt,
+			params.ClipSkip,
+			params.CfgScale,
+			params.Width,
+			params.Height,
+			params.SampleMethod,
+			params.SampleSteps,
+			seed,
+		)
+
+		var filename = fmt.Sprintf("%d-%d-%d.png", seed, timeSave, i)
 		var file *os.File
-		file, err = os.Create(filename)
+		file, err = os.Create("./output/" + filename)
 		if err != nil {
 			return
 		}
 
-		err = imageToWriter(img, params.OutputsImageType, file)
+		err = imageToWriter(data, params.OutputsImageType, file)
 		if err != nil {
 			return
 		}
 
-		_ = file.Close()
+		err = file.Close()
+		if err != nil {
+			return
+		}
+
+		filenames = append(filenames, filename)
+		seed++
 	}
 
 	return
