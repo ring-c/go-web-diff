@@ -3,7 +3,6 @@ package bind
 import (
 	"errors"
 	"image"
-	"io"
 	"os"
 	"unsafe"
 
@@ -29,13 +28,6 @@ type cImage struct {
 	height  uint32
 	channel uint32
 	data    unsafe.Pointer
-}
-
-type Image struct {
-	Width   uint32
-	Height  uint32
-	Channel uint32
-	Data    []byte
 }
 
 type CStableDiffusionImpl struct {
@@ -142,13 +134,8 @@ func (c *CStableDiffusionImpl) GetSystemInfo() string {
 	return goString(c.sdGetSystemInfo())
 }
 
-func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, reader io.Reader, upscaleFactor uint32) (result image.Image, err error) {
-	decode, _, err := image.Decode(reader)
-	if err != nil {
-		return
-	}
-
-	var img = imageToBytes(decode)
+func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Image, upscaleFactor uint32) (result image.Image, err error) {
+	var img = imageToBytes(decoded)
 
 	var newSDImage = c.Upscale(
 		ctx.ctx,
