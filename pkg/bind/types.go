@@ -22,28 +22,22 @@ func goString(cText unsafe.Pointer) string {
 	return unsafe.String((*byte)(cText), length)
 }
 
-func goImageSlice(c unsafe.Pointer, size int) (goImages []Image) {
+func goImageSlice(cImages unsafe.Pointer, size int) (goImages []Image) {
 	goImages = make([]Image, size)
-
-	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
-	ptr := *(*unsafe.Pointer)(&c)
-	if ptr == nil {
-		return nil
+	if cImages == nil {
+		return
 	}
-	img := (*cImage)(ptr)
+	img := (*cImage)(cImages)
 	imgSlice := unsafe.Slice(img, size)
 
 	for i, imageS := range imgSlice {
-		dataPtr := *(*unsafe.Pointer)(unsafe.Pointer(&imageS.data))
-
 		goImages[i] = Image{
 			Channel: imageS.channel,
 			Width:   imageS.width,
 			Height:  imageS.height,
-			Data:    unsafe.Slice((*byte)(dataPtr), imageS.channel*imageS.width*imageS.height),
+			Data:    unsafe.Slice((*byte)(imageS.data), imageS.channel*imageS.width*imageS.height),
 		}
 	}
-
 	return
 }
 
