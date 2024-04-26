@@ -3,7 +3,6 @@ package opts
 type (
 	SampleMethod int
 	RNGType      int
-	Schedule     int
 	WType        int
 	LogLevel     int
 
@@ -31,6 +30,8 @@ const (
 	STD_DEFAULT_RNG RNGType = iota
 	CUDA_RNG
 )
+
+type Schedule int
 
 const (
 	DEFAULT Schedule = iota
