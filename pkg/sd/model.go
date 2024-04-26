@@ -170,7 +170,8 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 
 	switch imageType {
 	case opts.PNG:
-		err = png.Encode(writer, image)
+		var enc = png.Encoder{CompressionLevel: png.BestSpeed}
+		err = enc.Encode(writer, image)
 	case opts.JPEG:
 		err = jpeg.Encode(writer, image, &jpeg.Options{Quality: 100})
 	}
@@ -202,13 +203,38 @@ func (sd *Model) CloseUpscaleModel() {
 	}
 }
 
-func (sd *Model) UpscaleImage(reader io.Reader, upscaleFactor uint32, writer io.Writer) (err error) {
-	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, reader, upscaleFactor)
+func (sd *Model) UpscaleImage(filenameIn, filenameOut string, upscaleFactor uint32) (err error) {
+	var fileRead *os.File
+	fileRead, err = os.Open(filenameIn)
 	if err != nil {
 		return
 	}
 
-	err = imageToWriter(img, opts.PNG, writer)
+	defer func() {
+		_ = fileRead.Close()
+	}()
+
+	decoded, _, err := image.Decode(fileRead)
+	if err != nil {
+		return
+	}
+
+	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, decoded, upscaleFactor)
+	if err != nil {
+		return
+	}
+
+	var fileWrite *os.File
+	fileWrite, err = os.Create(filenameOut)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		_ = fileWrite.Close()
+	}()
+
+	err = imageToWriter(img, opts.PNG, fileWrite)
 	if err != nil {
 		return
 	}

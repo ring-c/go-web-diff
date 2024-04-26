@@ -76,36 +76,16 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 	defer model.CloseUpscaleModel()
 
 	for _, file := range filenames {
-		var filename = filepath.Join(in.Params.OutputDir, file)
+		var filenameIn = filepath.Join(in.Params.OutputDir, file)
 		var filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
 
-		var fileRead *os.File
-		fileRead, err = os.Open(filename)
-		if err != nil {
-			return
-		}
-
-		defer func() {
-			_ = fileRead.Close()
-		}()
-
-		var fileWrite *os.File
-		fileWrite, err = os.Create(filenameOut)
-		if err != nil {
-			return
-		}
-
-		defer func() {
-			_ = fileWrite.Close()
-		}()
-
-		err = model.UpscaleImage(fileRead, 2, fileWrite)
+		err = model.UpscaleImage(filenameIn, filenameOut, 2)
 		if err != nil {
 			return
 		}
 
 		if in.Params.DeleteUpscaled {
-			err = os.Remove(filename)
+			err = os.Remove(filenameIn)
 			if err != nil {
 				return
 			}
