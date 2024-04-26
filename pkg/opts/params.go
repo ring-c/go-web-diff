@@ -7,6 +7,8 @@ type Params struct {
 	WithUpscale    bool   `json:"with_upscale"`
 	DeleteUpscaled bool   `json:"delete_upscaled"`
 
+	OutputDir string `json:"output_dir"`
+
 	Prompt           string           `json:"prompt"`
 	NegativePrompt   string           `json:"negative_prompt"`
 	ClipSkip         int              `json:"clip_skip"`

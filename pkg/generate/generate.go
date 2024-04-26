@@ -20,33 +20,17 @@ func Generate(c echo.Context) (err error) {
 
 	// spew.Dump(in)
 
-	model, err := sd.NewModel(&in.Options)
+	model, err := InitModel(in)
 	if err != nil {
 		println(err.Error())
 		return
 	}
 	defer model.Close()
 
-	// println(model.GetSystemInfo())
-
-	err = model.LoadFromFile(in.Params.ModelPath)
+	err = Run(model, in)
 	if err != nil {
 		println(err.Error())
 		return
-	}
-
-	filenames, err := model.Predict(&in.Params)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	if in.Params.WithUpscale {
-		err = upscale(model, in.Params.UpscalePath, in.Params.DeleteUpscaled, filenames)
-		if err != nil {
-			println(err.Error())
-			return
-		}
 	}
 
 	fmt.Printf("\nDONE\n")
@@ -55,15 +39,45 @@ func Generate(c echo.Context) (err error) {
 	return
 }
 
-func upscale(model *sd.Model, path string, deleteUpscaled bool, filenames []string) (err error) {
-	model.LoadUpscaleModel(path)
+func InitModel(in *InputData) (model *sd.Model, err error) {
+	model, err = sd.NewModel(&in.Options)
+	if err != nil {
+		return
+	}
+
+	// println(model.GetSystemInfo())
+
+	err = model.LoadFromFile(in.Params.ModelPath)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func Run(model *sd.Model, in *InputData) (err error) {
+	filenames, err := model.Predict(&in.Params)
+	if err != nil {
+		return
+	}
+
+	if in.Params.WithUpscale {
+		err = Upscale(model, in, filenames)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
+	model.LoadUpscaleModel(in.Params.UpscalePath)
 	defer model.CloseUpscaleModel()
 
-	var outputDir = "./output/"
-
 	for _, file := range filenames {
-		var filename = filepath.Join(outputDir, file)
-		var filenameOut = filepath.Join(outputDir, "u-"+file)
+		var filename = filepath.Join(in.Params.OutputDir, file)
+		var filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
 
 		var fileRead *os.File
 		fileRead, err = os.Open(filename)
@@ -90,7 +104,7 @@ func upscale(model *sd.Model, path string, deleteUpscaled bool, filenames []stri
 			return
 		}
 
-		if deleteUpscaled {
+		if in.Params.DeleteUpscaled {
 			err = os.Remove(filename)
 			if err != nil {
 				return
