@@ -72,7 +72,10 @@ func Run(model *sd.Model, in *InputData) (err error) {
 }
 
 func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
-	model.LoadUpscaleModel(in.Params.UpscalePath)
+	err = model.LoadUpscaleModel(in.Params.UpscalePath)
+	if err != nil {
+		return
+	}
 	defer model.CloseUpscaleModel()
 
 	for _, file := range filenames {
