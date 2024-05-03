@@ -141,6 +141,11 @@ func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
 			seed,
 		)
 
+		if data.Bounds().Max.X == 0 || data.Bounds().Max.Y == 0 {
+			println("err generate, size 0x0")
+			continue
+		}
+
 		var filename = fmt.Sprintf("%d-%d-%d.png", seed, timeSave, i)
 		var file *os.File
 		file, err = os.Create("./output/" + filename)
@@ -183,7 +188,12 @@ func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io
 	return
 }
 
-func (sd *Model) LoadUpscaleModel(esrganPath string) {
+func (sd *Model) LoadUpscaleModel(esrganPath string) (err error) {
+	if _, err = os.Stat(esrganPath); errors.Is(err, os.ErrNotExist) {
+		err = errors.New("upscale model does not exists")
+		return
+	}
+
 	if sd.upscalerCtx == nil {
 		sd.esrganPath = esrganPath
 		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.WType)
@@ -195,6 +205,8 @@ func (sd *Model) LoadUpscaleModel(esrganPath string) {
 		}
 		sd.upscalerCtx = sd.cSD.NewUpscalerCtx(esrganPath, sd.options.Threads, sd.options.WType)
 	}
+
+	return
 }
 
 func (sd *Model) CloseUpscaleModel() {
@@ -219,13 +231,17 @@ func (sd *Model) UpscaleImage(filenameIn, filenameOut string, upscaleFactor uint
 		return
 	}
 
-	img, err := sd.cSD.UpscaleImage(sd.upscalerCtx, decoded, upscaleFactor)
+	data, err := sd.cSD.UpscaleImage(sd.upscalerCtx, decoded, upscaleFactor)
 	if err != nil {
 		return
 	}
 
-	var fileWrite *os.File
-	fileWrite, err = os.Create(filenameOut)
+	if data.Bounds().Max.X == 0 || data.Bounds().Max.Y == 0 {
+		err = errors.New("size 0x0")
+		return
+	}
+
+	fileWrite, err := os.Create(filenameOut)
 	if err != nil {
 		return
 	}
@@ -234,7 +250,7 @@ func (sd *Model) UpscaleImage(filenameIn, filenameOut string, upscaleFactor uint
 		_ = fileWrite.Close()
 	}()
 
-	err = imageToWriter(img, opts.PNG, fileWrite)
+	err = imageToWriter(data, opts.PNG, fileWrite)
 	if err != nil {
 		return
 	}

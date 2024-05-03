@@ -49,6 +49,8 @@ type CStableDiffusionImpl struct {
 	freeUpscalerCtx func(ctx unsafe.Pointer)
 
 	Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
+
+	Test uintptr
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -77,6 +79,11 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
 
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
+
+	// impl.Test, err = purego.Dlsym(libSd, "new_sd_ctx_go")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return &impl, err
 }
