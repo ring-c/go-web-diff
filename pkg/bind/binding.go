@@ -80,10 +80,10 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
 
-	// impl.Test, err = purego.Dlsym(libSd, "new_sd_ctx_go")
-	// if err != nil {
-	// 	return nil, err
-	// }
+	impl.Test, err = purego.Dlsym(libSd, "new_sd_ctx_go")
+	if err != nil {
+		return nil, err
+	}
 
 	return &impl, err
 }

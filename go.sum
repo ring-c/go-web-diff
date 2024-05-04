@@ -6,6 +6,8 @@ github.com/ianlancetaylor/cgosymbolizer v0.0.0-20240326020559-581a3f7c677f h1:+G
 github.com/ianlancetaylor/cgosymbolizer v0.0.0-20240326020559-581a3f7c677f/go.mod h1:DvXTE/K/RtHehxU8/GtDs4vFtfw64jJ3PaCnFri8CRg=
 github.com/jupiterrider/ffi v0.1.0-beta.4 h1:Gne9eglitxbSXm0r1T82Tyl04SF1H7HdLsXX+xDE3xU=
 github.com/jupiterrider/ffi v0.1.0-beta.4/go.mod h1:fehrFMEB38q2MFEDBhs7DfBpZFdlZmi99iahlW1mix0=
+github.com/jupiterrider/ffi v0.1.0-beta.4.0.20240503184656-1176be4251c1 h1:w8urSj44UJV/3huphclbpsDkjOJsU92gD0/kikOgiec=
+github.com/jupiterrider/ffi v0.1.0-beta.4.0.20240503184656-1176be4251c1/go.mod h1:fehrFMEB38q2MFEDBhs7DfBpZFdlZmi99iahlW1mix0=
 github.com/labstack/echo/v4 v4.12.0 h1:IKpw49IMryVB2p1a4dzwlhP1O2Tf2E0Ir/450lH+kI0=
 github.com/labstack/echo/v4 v4.12.0/go.mod h1:UP9Cr2DJXbOK3Kr9ONYzNowSh7HP0aG0ShAyycHSJvM=
 github.com/labstack/gommon v0.4.2 h1:F8qTUNXgG1+6WQmqoUWnz8WiEU60mXVVw0P4ht1WRA0=
