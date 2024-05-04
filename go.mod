@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/ebitengine/purego v0.7.1
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20240326020559-581a3f7c677f
-	github.com/jupiterrider/ffi v0.1.0-beta.4
+	github.com/jupiterrider/ffi v0.1.0-beta.4.0.20240503184656-1176be4251c1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
 	github.com/stretchr/testify v1.9.0
