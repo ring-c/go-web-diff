@@ -20,14 +20,7 @@ func Generate(c echo.Context) (err error) {
 
 	// spew.Dump(in)
 
-	model, err := InitModel(in)
-	if err != nil {
-		println(err.Error())
-		return
-	}
-	defer model.Close()
-
-	err = Run(model, in)
+	err = Run(in)
 	if err != nil {
 		println(err.Error())
 		return
@@ -39,11 +32,12 @@ func Generate(c echo.Context) (err error) {
 	return
 }
 
-func InitModel(in *InputData) (model *sd.Model, err error) {
-	model, err = sd.NewModel(&in.Options)
+func Run(in *InputData) (err error) {
+	model, err := sd.NewModel(&in.Options)
 	if err != nil {
 		return
 	}
+	defer model.Close()
 
 	// println(model.GetSystemInfo())
 
@@ -52,14 +46,11 @@ func InitModel(in *InputData) (model *sd.Model, err error) {
 		return
 	}
 
-	return
-}
-
-func Run(model *sd.Model, in *InputData) (err error) {
 	filenames, err := model.Predict(&in.Params)
 	if err != nil {
 		return
 	}
+	model.Close()
 
 	if in.Params.WithUpscale {
 		err = Upscale(model, in, filenames)
@@ -78,9 +69,12 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 	}
 	defer model.CloseUpscaleModel()
 
-	for _, file := range filenames {
+	var total = len(filenames)
+	for i, file := range filenames {
 		var filenameIn = filepath.Join(in.Params.OutputDir, file)
 		var filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
+
+		fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
 
 		err = model.UpscaleImage(filenameIn, filenameOut, 2)
 		if err != nil {
