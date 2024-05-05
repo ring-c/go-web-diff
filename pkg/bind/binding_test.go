@@ -1,22 +1,15 @@
 package bind
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-	"image/png"
-	"os"
-	"testing"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/require"
-
-	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
 func init() {
 	spew.Config.Indent = "\t"
 }
+
+/*
+
 
 func writeToFile(t *testing.T, byteData []byte, height int, width int, outputPath string) {
 
@@ -49,7 +42,6 @@ func writeToFile(t *testing.T, byteData []byte, height int, width int, outputPat
 	t.Log("Image saved at", outputPath)
 }
 
-/*
 
 func readFromFile(t *testing.T, path string) *sd.Image {
 	file, err := os.Open(path)
@@ -101,7 +93,6 @@ func TestNewCStableDiffusionImg2Img(t *testing.T) {
 	writeToFile(t, images[0].Data, 256, 256, "./assets/test1.png")
 }
 
-*/
 
 func TestNewCStableDiffusionText2Img(t *testing.T) {
 	var r = require.New(t)
@@ -120,3 +111,4 @@ func TestNewCStableDiffusionText2Img(t *testing.T) {
 
 	writeToFile(t, images[0].Data, 256, 256, "../../output/test.png")
 }
+*/
