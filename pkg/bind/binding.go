@@ -7,7 +7,6 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
-	_ "github.com/ianlancetaylor/cgosymbolizer"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
@@ -40,10 +39,8 @@ type CStableDiffusionImpl struct {
 
 	// img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
 
-	newSDContext          func(params unsafe.Pointer) unsafe.Pointer
-	newSDContextParams    func(modelPath, loraModelDir, vaePath string, nThreads int16, wType opts.WType, rngType opts.RNGType, schedule opts.Schedule) unsafe.Pointer
-	newSDContextParamsSet func()
-	freeSDContext         func(ctx unsafe.Pointer)
+	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
+	freeSDContext func(ctx unsafe.Pointer)
 
 	newUpscalerCtx  func(esrganPath string, nThreads int16, wtype int) unsafe.Pointer
 	freeUpscalerCtx func(ctx unsafe.Pointer)
@@ -72,18 +69,11 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
-	purego.RegisterLibFunc(&impl.newSDContextParams, libSd, "new_sd_ctx_params")
-	purego.RegisterLibFunc(&impl.newSDContextParamsSet, libSd, "new_sd_ctx_params_set")
 
 	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
 
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
-
-	impl.Test, err = purego.Dlsym(libSd, "new_sd_ctx_go")
-	if err != nil {
-		return nil, err
-	}
 
 	return &impl, err
 }
