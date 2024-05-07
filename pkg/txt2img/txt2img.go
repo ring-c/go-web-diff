@@ -3,17 +3,8 @@ package sd
 import (
 	"fmt"
 	"time"
-)
 
-type SampleMethodT int
-
-const (
-	SampleMethodUnknown SampleMethodT = iota
-	SampleMethodDPMSolverMultistep
-	SampleMethodDPMSolverSinglestep
-	SampleMethodHeun
-	SampleMethodEuler
-	SampleMethodLMS
+	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
 type SDImageT struct {
@@ -37,7 +28,7 @@ func Txt2Img(
 	clipSkip int,
 	cfgScale float32,
 	width, height int,
-	sampleMethod SampleMethodT,
+	sampleMethod opts.SampleMethod,
 	sampleSteps int,
 	seed int64,
 	batchCount int,
