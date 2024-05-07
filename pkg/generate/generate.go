@@ -3,7 +3,6 @@ package generate
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"
@@ -72,20 +71,16 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 	var total = len(filenames)
 	for i, file := range filenames {
 		var filenameIn = filepath.Join(in.Params.OutputDir, file)
-		var filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
+		var filenameOut = filenameIn
+		if !in.Params.DeleteUpscaled {
+			filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
+		}
 
 		fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
 
 		err = model.UpscaleImage(filenameIn, filenameOut, 2)
 		if err != nil {
 			return
-		}
-
-		if in.Params.DeleteUpscaled {
-			err = os.Remove(filenameIn)
-			if err != nil {
-				return
-			}
 		}
 	}
 

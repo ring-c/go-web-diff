@@ -118,10 +118,7 @@ func (c *CStableDiffusionImpl) Close() (err error) {
 	}
 
 	if len(c.libFilename) > 0 {
-		err = os.Remove(c.libFilename)
-		if err != nil {
-			return
-		}
+		_ = os.Remove(c.libFilename)
 	}
 
 	return
