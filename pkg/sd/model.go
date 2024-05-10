@@ -37,7 +37,7 @@ func NewModel(options *opts.Options) (model *Model, err error) {
 
 	if options.Debug {
 		csd.SetLogCallBack(func(level opts.LogLevel, text string) {
-			fmt.Printf("%s", text)
+			print(text)
 		})
 	}
 
