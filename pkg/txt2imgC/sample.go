@@ -15,7 +15,7 @@ func sample(
 	minCfg float32,
 	cfgScale float32,
 	method sampleMethodT,
-	sigmas []float32,
+	sigmas []float64,
 	startMergeStep int,
 	cID *ggml.Tensor,
 	cVecID *ggml.Tensor,
