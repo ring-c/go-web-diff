@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 
@@ -69,6 +70,7 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 	defer model.CloseUpscaleModel()
 
 	var total = len(filenames)
+	var wg = new(sync.WaitGroup)
 	for i, file := range filenames {
 		var filenameIn = filepath.Join(in.Params.OutputDir, file)
 		var filenameOut = filenameIn
@@ -78,11 +80,12 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 
 		fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
 
-		err = model.UpscaleImage(filenameIn, filenameOut, 2)
+		err = model.UpscaleImage(wg, filenameIn, filenameOut, 2)
 		if err != nil {
 			return
 		}
 	}
 
+	wg.Wait()
 	return
 }

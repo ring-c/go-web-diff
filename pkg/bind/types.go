@@ -41,8 +41,8 @@ func goImageSlice(cImages unsafe.Pointer, size int) (goImages []Image) {
 	return
 }
 
-func bytesToImage(byteData []byte, width, height int) image.Image {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+func bytesToImage(byteData []byte, width, height int) (img *image.RGBA) {
+	img = image.NewRGBA(image.Rect(0, 0, width, height))
 
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -55,7 +55,8 @@ func bytesToImage(byteData []byte, width, height int) image.Image {
 			})
 		}
 	}
-	return img
+
+	return
 }
 
 type Image struct {
