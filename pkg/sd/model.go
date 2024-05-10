@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/jpeg"
 	"image/png"
 	"io"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
@@ -153,7 +153,7 @@ func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
 			return
 		}
 
-		err = imageToWriter(data, params.OutputsImageType, file)
+		err = imageToWriter(data, file)
 		if err != nil {
 			return
 		}
@@ -170,17 +170,12 @@ func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
 	return
 }
 
-func imageToWriter(image image.Image, imageType opts.OutputsImageType, writer io.Writer) (err error) {
-	err = errors.New("unknown image type")
-
-	switch imageType {
-	case opts.PNG:
-		var enc = png.Encoder{CompressionLevel: png.BestSpeed}
-		err = enc.Encode(writer, image)
-	case opts.JPEG:
-		err = jpeg.Encode(writer, image, &jpeg.Options{Quality: 100})
+func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
+	var enc = png.Encoder{
+		CompressionLevel: png.BestSpeed,
 	}
 
+	err = enc.Encode(writer, image)
 	if err != nil {
 		return
 	}
@@ -215,7 +210,7 @@ func (sd *Model) CloseUpscaleModel() {
 	}
 }
 
-func (sd *Model) UpscaleImage(filenameIn, filenameOut string, upscaleFactor uint32) (err error) {
+func (sd *Model) UpscaleImage(wg *sync.WaitGroup, filenameIn, filenameOut string, upscaleFactor uint32) (err error) {
 	var fileRead *os.File
 	fileRead, err = os.Open(filenameIn)
 	if err != nil {
@@ -241,19 +236,26 @@ func (sd *Model) UpscaleImage(filenameIn, filenameOut string, upscaleFactor uint
 		return
 	}
 
-	fileWrite, err := os.Create(filenameOut)
-	if err != nil {
-		return
-	}
+	wg.Add(1)
+	go func(wgg *sync.WaitGroup, img *image.RGBA, filename string) {
+		defer wgg.Done()
 
-	defer func() {
-		_ = fileWrite.Close()
-	}()
+		var fileWrite, err = os.Create(filename)
+		if err != nil {
+			println(err.Error())
+			return
+		}
 
-	err = imageToWriter(data, opts.PNG, fileWrite)
-	if err != nil {
-		return
-	}
+		defer func() {
+			_ = fileWrite.Close()
+		}()
+
+		err = imageToWriter(img, fileWrite)
+		if err != nil {
+			println(err.Error())
+			return
+		}
+	}(wg, data, filenameOut)
 
 	return
 }

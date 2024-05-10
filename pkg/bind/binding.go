@@ -78,7 +78,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	return &impl, err
 }
 
-func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result image.Image) {
+func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result *image.RGBA) {
 	var cImages = c.txt2img(
 		ctx.CTX,
 		prompt,
@@ -128,7 +128,7 @@ func (c *CStableDiffusionImpl) GetSystemInfo() string {
 	return goString(c.sdGetSystemInfo())
 }
 
-func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Image, upscaleFactor uint32) (result image.Image, err error) {
+func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Image, upscaleFactor uint32) (result *image.RGBA, err error) {
 	var img = imageToBytes(decoded)
 
 	var newSDImage = c.Upscale(
