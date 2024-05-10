@@ -26,7 +26,9 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	fmt.Printf("\nDONE\n")
+	if in.Options.Debug {
+		fmt.Printf("\nDONE\n")
+	}
 
 	_ = c.JSON(http.StatusOK, "OK")
 	return
@@ -46,7 +48,7 @@ func Run(in *InputData) (err error) {
 		return
 	}
 
-	filenames, err := model.Predict(&in.Params)
+	filenames, err := model.Predict(&in.Params, in.Options.Debug)
 	if err != nil {
 		return
 	}
@@ -78,7 +80,9 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 			filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
 		}
 
-		fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
+		if in.Options.Debug {
+			fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
+		}
 
 		err = model.UpscaleImage(wg, filenameIn, filenameOut, 2)
 		if err != nil {

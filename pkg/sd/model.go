@@ -102,7 +102,7 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
+func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, err error) {
 	filenames = make([]string, 0)
 	if sd.ctx == nil {
 		err = errors.New("model not loaded")
@@ -126,7 +126,9 @@ func (sd *Model) Predict(params *opts.Params) (filenames []string, err error) {
 
 	var timeSave = time.Now().Unix()
 	for i := 0; i < params.BatchCount; i++ {
-		fmt.Printf("\nGenerating for seed %d\n\n", seed)
+		if debug {
+			fmt.Printf("\nGenerating for seed %d\n\n", seed)
+		}
 
 		var data = sd.cSD.PredictImage(
 			sd.ctx,
