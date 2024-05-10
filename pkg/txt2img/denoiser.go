@@ -1,43 +1,51 @@
-package sd
+package main
 
 import (
-	"time"
+	"math"
+
+	"gorgonia.org/tensor"
 )
 
-func denoise(input *ggmlTensor, sigma float32, step int) {
+var denoiser = denoiserStruct{}
 
-	t0 := time.Now()
+type denoiserStruct struct {
+}
 
-	cSkip := 1.0
-	cOut := 1.0
-	cIn := 1.0
-	scaling := denoiser.GetScalings(sigma)
+func (dn denoiserStruct) GetSigmas(steps int) (sigmas []float64) {
+	sigmas = make([]float64, 0)
 
-	if len(scaling) == 3 { // CompVisVDenoiser
-		cSkip = scaling[0]
-		cOut = scaling[1]
-		cIn = scaling[2]
-	} else { // CompVisDenoiser
-		cOut = scaling[0]
-		cIn = scaling[1]
+	var sigmaMin = 0.1
+	var sigmaMax = 10.0
+	var rho = 7.0
+
+	var minInvRho = math.Pow(sigmaMin, 1.0/rho)
+	var maxInvRho = math.Pow(sigmaMax, 1.0/rho)
+
+	var stepsF = (float64(steps) - 1) * (minInvRho - maxInvRho)
+	for i := 0; i < steps; i++ {
+		var result = math.Pow(maxInvRho+float64(i)/stepsF, rho)
+		sigmas = append(sigmas, result)
 	}
+	sigmas = append(sigmas, 0.0)
 
-	t := denoiser.Schedule.SigmaToT(sigma)
+	return
+}
+
+func (dn denoiserStruct) DeNoise(input *tensor.Dense, sigma float64, step int) {
+	cSkip := 1.0
+	cOut, cIn := dn.GetScaling(sigma)
+
+	t := denoiser.SigmaToT(sigma)
 	timestepsVec := make([]float32, x.Ne[3])
 	for i := range timestepsVec {
 		timestepsVec[i] = t
 	}
-	timesteps := vectorToGgmlTensor(workCtx, timestepsVec)
+	timesteps := vectorTotensor.Dense(workCtx, timestepsVec)
 
-	copyGgmlTensor(noisedInput, input)
-	ggmlTensorScale(noisedInput, cIn)
+	copytensor.Dense(noisedInput, input)
+	tensor.DenseScale(noisedInput, cIn)
 
-	var controls []*ggmlTensor
-
-	if controlHint != nil {
-		controlNet.Compute(nThreads, noisedInput, controlHint, timesteps, c, cVector)
-		controls = controlNet.Controls
-	}
+	var controls []*tensor.Dense
 
 	if startMergeStep == -1 || step <= startMergeStep {
 		diffusionModel.Compute(nThreads, noisedInput, timesteps, c, cConcat, cVector, -1, controls, controlStrength, &outCond)
@@ -71,8 +79,9 @@ func denoise(input *ggmlTensor, sigma float32, step int) {
 		}
 		vecDenoised[i] = latentResult*cOut + vecInput[i]*cSkip
 	}
-	t1 := time.Now()
-	if step > 0 {
-		prettyProgress(step, int(steps), float32(t1.Sub(t0).Microseconds())/1000000.0)
-	}
+}
+
+func (dn denoiserStruct) GetScaling(sigma float64) (float64, float64) {
+	var cIn = 1.0 / math.Sqrt(sigma*sigma+1*1)
+	return -sigma, cIn
 }

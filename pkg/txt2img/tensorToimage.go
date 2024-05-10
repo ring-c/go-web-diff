@@ -33,12 +33,6 @@ func tensorToImage(input *tensor.Dense) (img *image.RGBA, err error) {
 
 	for iy := 0; iy < height; iy++ {
 		for ix := 0; ix < width; ix++ {
-			// for k := 0; k < channels; k++ {
-			//
-			//
-			// 	data[iy*width*channels+ix*channels+k] = uint8(value * 255.0)
-			// }
-
 			var R, G, B uint8
 
 			R, err = tensorGetF32(input, ix, iy, 0)
@@ -62,7 +56,6 @@ func tensorToImage(input *tensor.Dense) (img *image.RGBA, err error) {
 				B: B,
 				A: 255,
 			})
-
 		}
 	}
 
