@@ -127,7 +127,7 @@ func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, e
 	var timeSave = time.Now().Unix()
 	for i := 0; i < params.BatchCount; i++ {
 		if debug {
-			fmt.Printf("\nGenerating for seed %d\n\n", seed)
+			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, params.BatchCount, seed)
 		}
 
 		var data = sd.cSD.PredictImage(
@@ -148,7 +148,7 @@ func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, e
 			continue
 		}
 
-		var filename = fmt.Sprintf("%d-%d-%d.png", timeSave, seed, i)
+		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
 		var file *os.File
 		file, err = os.Create("./output/" + filename)
 		if err != nil {
