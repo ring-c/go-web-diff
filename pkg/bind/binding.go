@@ -33,7 +33,25 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	txt2img          func(ctx unsafe.Pointer, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, seed int64, batchCount int, controlCond unsafe.Pointer, controlStrength float32, styleRatio float32, normalizeInput bool, inputIdImagesPath string) unsafe.Pointer
+	txt2img func(
+		ctx unsafe.Pointer,
+		prompt string,
+		negativePrompt string,
+		clipSkip int,
+		cfgScale float32,
+		width int,
+		height int,
+		sampleMethod int,
+		sampleSteps int,
+		seed int64,
+		batchCount int,
+		controlCond unsafe.Pointer,
+		controlStrength float32,
+		styleRatio float32,
+		normalizeInput bool,
+		inputIdImagesPath string,
+	) unsafe.Pointer
+
 	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
 

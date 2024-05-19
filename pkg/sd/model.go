@@ -148,7 +148,7 @@ func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, e
 			continue
 		}
 
-		var filename = fmt.Sprintf("%d-%d-%d.png", seed, timeSave, i)
+		var filename = fmt.Sprintf("%d-%d-%d.png", timeSave, seed, i)
 		var file *os.File
 		file, err = os.Create("./output/" + filename)
 		if err != nil {
