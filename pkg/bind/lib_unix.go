@@ -8,7 +8,7 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/bind/deps"
 )
 
-func openLibrary() (ptr uintptr, filename string, err error) {
+func OpenLibrary() (ptr uintptr, filename string, err error) {
 	filename, err = deps.DumpSDLibrary(true)
 	if err != nil {
 		return
@@ -22,6 +22,6 @@ func openLibrary() (ptr uintptr, filename string, err error) {
 	return
 }
 
-func closeLibrary(handle uintptr) error {
+func CloseLibrary(handle uintptr) error {
 	return purego.Dlclose(handle)
 }
