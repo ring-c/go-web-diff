@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -150,7 +151,7 @@ func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, e
 
 		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
 		var file *os.File
-		file, err = os.Create("./output/" + filename)
+		file, err = os.Create(path.Join(params.OutputDir, filename))
 		if err != nil {
 			return
 		}

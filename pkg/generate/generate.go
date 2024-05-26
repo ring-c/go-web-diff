@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -35,6 +36,8 @@ func Generate(c echo.Context) (err error) {
 }
 
 func Run(in *InputData) (err error) {
+	_ = os.Mkdir(in.Params.OutputDir, os.ModePerm)
+
 	model, err := sd.NewModel(&in.Options)
 	if err != nil {
 		return
