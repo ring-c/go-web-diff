@@ -96,6 +96,11 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 	}
 
 	sd.ctx = sd.cSD.NewSDContext(params)
+	if sd.ctx.CTX == nil {
+		err = errors.New("error sd context creation")
+		return
+	}
+
 	return
 }
 

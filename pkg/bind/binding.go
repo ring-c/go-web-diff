@@ -69,7 +69,7 @@ type CStableDiffusionImpl struct {
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
-	libSd, filename, err := openLibrary()
+	libSd, filename, err := OpenLibrary()
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {
 
 func (c *CStableDiffusionImpl) Close() (err error) {
 	if c.libSd != 0 {
-		err = closeLibrary(c.libSd)
+		err = CloseLibrary(c.libSd)
 		if err != nil {
 			return
 		}
