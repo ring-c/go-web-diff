@@ -19,8 +19,6 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	// spew.Dump(in)
-
 	err = Run(in)
 	if err != nil {
 		println(err.Error())
