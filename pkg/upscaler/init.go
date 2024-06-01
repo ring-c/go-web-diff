@@ -1,10 +1,19 @@
 package upscaler
 
 import (
+	"unsafe"
+
 	"github.com/ebitengine/purego"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
+	"github.com/ring-c/go-web-diff/pkg/ggml"
 )
+
+type Upscaler struct {
+	GGML ggml.Struct
+
+	upscaleCTX unsafe.Pointer
+}
 
 func New() (*Upscaler, error) {
 	libSd, _, err := bind.OpenLibrary()
@@ -12,9 +21,14 @@ func New() (*Upscaler, error) {
 		return nil, err
 	}
 
-	var impl = Upscaler{}
+	var impl = Upscaler{
+		GGML: ggml.Struct{},
+	}
 
-	purego.RegisterLibFunc(&impl.GGML.Init, libSd, "ggml_init")
+	purego.RegisterLibFunc(&impl.GGML.InitGo, libSd, "ggml_init_go")
+	// purego.RegisterLibFunc(&impl.GGML.TensorOverhead, libSd, "ggml_tensor_overhead")
+	purego.RegisterLibFunc(&impl.GGML.NewTensor4D, libSd, "ggml_new_tensor_4d")
+	purego.RegisterLibFunc(&impl.GGML.TensorSetF32, libSd, "ggml_tensor_set_f32_go")
 
 	return &impl, err
 }

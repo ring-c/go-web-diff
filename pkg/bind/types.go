@@ -66,7 +66,7 @@ type Image struct {
 	Data    []byte
 }
 
-func imageToBytes(decode image.Image) Image {
+func ImageToBytes(decode image.Image) Image {
 	bounds := decode.Bounds()
 	width := bounds.Max.X - bounds.Min.X
 	height := bounds.Max.Y - bounds.Min.Y
