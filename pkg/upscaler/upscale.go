@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"image"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func (u *Upscaler) upscale(inputImage image.Image) (upscaledImage image.Image, err error) {
@@ -31,14 +29,10 @@ func (u *Upscaler) upscale(inputImage image.Image) (upscaledImage image.Image, e
 
 	var input = u.GGML.NewTensor4D(u.upscaleCTX, 0, inputWidth, inputHeight, 3, 1)
 
-	spew.Dump(input)
-
 	u.imageToTensor(inputImage, input)
 
-	spew.Dump(input)
-
 	/*
-		sdImageToTensor(inputImage.data, inputImageTensor)
+
 
 		upscaled := ggmlNewTensor4d(upscaleCtx, GGML_TYPE_F32, uint32(outputWidth), uint32(outputHeight), 3, 1)
 		onTiling := func(in, out *ggmlTensor, init bool) {
