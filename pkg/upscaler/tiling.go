@@ -5,7 +5,7 @@ import (
 )
 
 // Tiling
-func sdTiling(input, output *ggml.Tensor, scale, tileSize int, tileOverlapFactor float32, onTileProcess func(*ggml.Tensor, *ggml.Tensor, bool)) {
+func (u *Upscaler) sdTiling(input, output *ggml.Tensor, scale, tileSize int, tileOverlapFactor float32, onTileProcess func(*ggml.Tensor, *ggml.Tensor, bool)) {
 	inputWidth, inputHeight := int(input.Ne[0]), int(input.Ne[1])
 	outputWidth, outputHeight := int(output.Ne[0]), int(output.Ne[1])
 	if inputWidth%2 != 0 || inputHeight%2 != 0 || outputWidth%2 != 0 || outputHeight%2 != 0 {
