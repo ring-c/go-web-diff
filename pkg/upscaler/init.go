@@ -5,6 +5,7 @@ import (
 )
 
 type Upscaler struct {
+	// Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
 }
 
 func New() (*Upscaler, error) {
@@ -15,7 +16,7 @@ func New() (*Upscaler, error) {
 
 	var impl = Upscaler{}
 
-	// purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
+	// purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
 
 	return &impl, err
 }
