@@ -147,7 +147,7 @@ func (c *CStableDiffusionImpl) GetSystemInfo() string {
 }
 
 func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Image, upscaleFactor uint32) (result *image.RGBA, err error) {
-	var img = imageToBytes(decoded)
+	var img = ImageToBytes(decoded)
 
 	var newSDImage = c.Upscale(
 		ctx.ctx,
