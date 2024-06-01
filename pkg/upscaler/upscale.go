@@ -1,12 +1,14 @@
 package upscaler
 
-func upscale(inputImage sdImageT, upscaleFactor uint32) sdImageT {
-	// upscaleFactor is unused for RealESRGAN_x4plus_anime_6B.pth
-	var upscaledImage sdImageT
+import (
+	"image"
+)
+
+func (u *Upscaler) upscale(inputImage image.Image) (upscaledImage image.Image, err error) {
 
 	outputWidth := int(inputImage.width) * esrganUpscaler.scale
 	outputHeight := int(inputImage.height) * esrganUpscaler.scale
-	logInfo("upscaling from (%d x %d) to (%d x %d)", inputImage.width, inputImage.height, outputWidth, outputHeight)
+	// logInfo("upscaling from (%d x %d) to (%d x %d)", inputImage.width, inputImage.height, outputWidth, outputHeight)
 
 	params := ggmlInitParams{
 		memSize:   uint64(outputWidth * outputHeight * 3 * 4 * 2),
@@ -31,7 +33,7 @@ func upscale(inputImage sdImageT, upscaleFactor uint32) sdImageT {
 		esrganUpscaler.compute(nThreads, in, out)
 	}
 	t0 := ggmlTimeMs()
-	sdTiling(inputImageTensor, upscaled, esrganUpscaler.scale, esrganUpscaler.tileSize, 0.25, onTiling)
+	u.sdTiling(inputImageTensor, upscaled, esrganUpscaler.scale, esrganUpscaler.tileSize, 0.25, onTiling)
 	esrganUpscaler.freeComputeBuffer()
 	ggmlTensorClamp(upscaled, 0, 1)
 	upscaledData := sdTensorToImage(upscaled)
