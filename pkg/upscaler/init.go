@@ -13,6 +13,7 @@ type Upscaler struct {
 	GGML ggml.Struct
 
 	upscaleCTX unsafe.Pointer
+	ESRGAN     *ESRGAN
 }
 
 func New() (*Upscaler, error) {
@@ -22,7 +23,8 @@ func New() (*Upscaler, error) {
 	}
 
 	var impl = Upscaler{
-		GGML: ggml.Struct{},
+		GGML:   ggml.Struct{},
+		ESRGAN: NewESRGAN(),
 	}
 
 	purego.RegisterLibFunc(&impl.GGML.InitGo, libSd, "ggml_init_go")
