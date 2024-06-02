@@ -1,27 +1,27 @@
-//go:build no
-
 package upscaler
 
 import "log"
 
 type ESRGAN struct {
-	RRDBNet    rrdb_net
-	Scale      int
-	TileSize   int
-	backend    ggml_backend_t
-	wtype      ggml_type
-	paramsCtx  *ggml_context
-	computeCtx *ggml_context
+	RRDBNet  RRDBNet
+	Scale    int
+	TileSize int
+	// backend    ggml_backend_t
+	// wtype      ggml_type
+	// paramsCtx  *ggml_context
+	// computeCtx *ggml_context
 }
 
-func NewESRGAN(backend ggml_backend_t, wtype ggml_type) *ESRGAN {
+// backend ggml_backend_t, wtype ggml_type
+
+func NewESRGAN() *ESRGAN {
 	e := &ESRGAN{
 		Scale:    4,
 		TileSize: 128,
-		backend:  backend,
-		wtype:    wtype,
+		// backend:  backend,
+		// wtype:    wtype,
 	}
-	e.rrdb_net.Init(e.paramsCtx, e.wtype)
+	// e.rrdb_net.Init(e.paramsCtx, e.wtype)
 	return e
 }
 
@@ -34,7 +34,7 @@ func (e *ESRGAN) LoadFromFile(filePath string) bool {
 
 	e.allocParamsBuffer()
 	esrganTensors := make(map[string]*ggml_tensor)
-	e.rrdb_net.GetParamTensors(esrganTensors)
+	e.RRDBNet.GetParamTensors(esrganTensors)
 
 	modelLoader := NewModelLoader()
 	if !modelLoader.InitFromFile(filePath) {
@@ -52,6 +52,7 @@ func (e *ESRGAN) LoadFromFile(filePath string) bool {
 	return success
 }
 
+/*
 func (e *ESRGAN) BuildGraph(x *ggml_tensor) *ggml_cgraph {
 	gf := ggml_new_graph(e.computeCtx)
 	x = e.toBackend(x)
@@ -66,3 +67,4 @@ func (e *ESRGAN) Compute(nThreads int, x *ggml_tensor, output **ggml_tensor, out
 	}
 	GGMLModuleCompute(getGraph, nThreads, false, output, outputCtx)
 }
+*/
