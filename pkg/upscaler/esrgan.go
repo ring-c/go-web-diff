@@ -30,7 +30,7 @@ func (e *ESRGAN) GetDesc() string {
 }
 
 func (e *ESRGAN) LoadFromFile(filePath string) bool {
-	log.Printf("loading esrgan from '%s'", filePath)
+	log.Printf("loading esrgan from '%s'\n", filePath)
 
 	e.allocParamsBuffer()
 	esrganTensors := make(map[string]*ggml_tensor)
@@ -38,17 +38,17 @@ func (e *ESRGAN) LoadFromFile(filePath string) bool {
 
 	modelLoader := NewModelLoader()
 	if !modelLoader.InitFromFile(filePath) {
-		log.Printf("init esrgan model loader from file failed: '%s'", filePath)
+		log.Printf("init esrgan model loader from file failed: '%s'\n", filePath)
 		return false
 	}
 
 	success := modelLoader.LoadTensors(esrganTensors, e.backend)
 	if !success {
-		log.Printf("load esrgan tensors from model loader failed")
+		log.Printf("load esrgan tensors from model loader failed\n")
 		return false
 	}
 
-	log.Printf("esrgan model loaded")
+	log.Printf("esrgan model loaded\n")
 	return success
 }
 
