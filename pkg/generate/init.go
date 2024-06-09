@@ -8,4 +8,5 @@ func Routes(e *echo.Echo) {
 	var r = e.Group("/")
 	r.GET("", Index)
 	r.POST("generate", Generate)
+	r.GET("output/:filename", OutputDir)
 }
