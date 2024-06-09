@@ -5,6 +5,7 @@ import (
 )
 
 func Routes(e *echo.Echo) {
-	var r = e.Group("/generate")
-	r.POST("", Generate)
+	var r = e.Group("/")
+	r.GET("", Index)
+	r.POST("generate", Generate)
 }

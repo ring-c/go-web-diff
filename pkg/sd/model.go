@@ -108,44 +108,44 @@ func (sd *Model) GetSystemInfo() string {
 	return sd.cSD.GetSystemInfo()
 }
 
-func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, err error) {
+func (sd *Model) Predict(options *opts.Options) (filenames []string, err error) {
 	filenames = make([]string, 0)
 	if sd.ctx == nil {
 		err = errors.New("model not loaded")
 		return
 	}
 
-	if params == nil {
-		err = errors.New("params is nil")
+	if options == nil {
+		err = errors.New("options is nil")
 		return
 	}
 
-	if params.Width%8 != 0 || params.Height%8 != 0 {
+	if options.Width%8 != 0 || options.Height%8 != 0 {
 		err = errors.New("width and height must be multiples of 8")
 		return
 	}
 
-	var seed = params.Seed
+	var seed = options.Seed
 	if seed == -1 {
 		seed = rand.Int63()
 	}
 
 	var timeSave = time.Now().Unix()
-	for i := 0; i < params.BatchCount; i++ {
-		if debug {
-			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, params.BatchCount, seed)
+	for i := 0; i < options.BatchCount; i++ {
+		if options.Debug {
+			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, options.BatchCount, seed)
 		}
 
 		var data = sd.cSD.PredictImage(
 			sd.ctx,
-			params.Prompt,
-			params.NegativePrompt,
-			params.ClipSkip,
-			params.CfgScale,
-			params.Width,
-			params.Height,
-			params.SampleMethod,
-			params.SampleSteps,
+			options.Prompt,
+			options.NegativePrompt,
+			options.ClipSkip,
+			options.CfgScale,
+			options.Width,
+			options.Height,
+			options.SampleMethod,
+			options.SampleSteps,
 			seed,
 		)
 
@@ -156,7 +156,7 @@ func (sd *Model) Predict(params *opts.Params, debug bool) (filenames []string, e
 
 		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
 		var file *os.File
-		file, err = os.Create(path.Join(params.OutputDir, filename))
+		file, err = os.Create(path.Join(options.OutputDir, filename))
 		if err != nil {
 			return
 		}
