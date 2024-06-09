@@ -127,19 +127,14 @@ func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {
 	}, nil)
 }
 
-func (c *CStableDiffusionImpl) Close() (err error) {
+func (c *CStableDiffusionImpl) Close() {
 	if c.libSd != 0 {
-		err = CloseLibrary(c.libSd)
-		if err != nil {
-			return
-		}
+		_ = CloseLibrary(c.libSd)
 	}
 
 	if len(c.libFilename) > 0 {
 		_ = os.Remove(c.libFilename)
 	}
-
-	return
 }
 
 func (c *CStableDiffusionImpl) GetSystemInfo() string {
