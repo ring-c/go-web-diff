@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GWD</title>
+</head>
+
+<body>
+<form id="main-form" method="POST">
+    <table>
+        <tr>
+            <td style="width: 50%;">
+                <label>
+                    Prompt:<br/>
+                    <textarea name="prompt" cols="40" rows="10"></textarea>
+                </label><br/>
+
+                <label>
+                    Negative prompt:<br/>
+                    <textarea name="negative_prompt" cols="40" rows="10"></textarea>
+                </label><br/>
+            </td>
+            <td style="text-align: right;">
+                <label>
+                    Model path:
+                    <input type="text" name="model_path" value=""/>
+                </label><br/>
+
+                <label>
+                    Lora model dir:
+                    <input type="text" name="lora_model_dir" value=""/>
+                </label><br/>
+
+                <label>
+                    VAE path:
+                    <input type="text" name="vae_path" value=""/>
+                </label><br/>
+
+                <label>
+                    Width:
+                    <input type="number" name="width" value="1024"/>
+                </label><br/>
+
+                <label>
+                    Height:
+                    <input type="number" name="height" value="768"/>
+                </label><br/>
+
+
+                <label>
+                    CFG scale:
+                    <input type="number" name="cfg_scale" value="7"/>
+                </label><br/>
+
+                <label>
+                    Sample steps:
+                    <input type="number" name="sample_steps" value="24"/>
+                </label><br/>
+
+                <label>
+                    Batch count:
+                    <input type="number" name="batch_count" value="1"/>
+                </label><br/>
+            </td>
+        </tr>
+    </table>
+
+
+    <button type="submit">Send</button>
+</form>
+
+<script type="text/javascript">
+    const form = document.getElementById("main-form")
+    form.addEventListener("submit", formSend);
+
+    function formSend(event) {
+        event.preventDefault();
+
+        let data = {};
+        for (const el of form.elements) {
+            if (el.name === "") {
+                continue;
+            }
+
+            let value;
+            switch (el.type) {
+                case 'checkbox':
+                case 'radio':
+                    value = el.checked;
+                    break;
+
+                case 'number':
+                case 'range':
+                    value = +(el.value || 0);
+                    break;
+
+                default:
+                    value = el.value || ''
+                    break;
+            }
+
+            data[el.name] = value;
+        }
+
+        let dataJSON = JSON.stringify(data)
+
+        // Save form data
+        localStorage.setItem('main-form-data', dataJSON);
+
+        // Send to server
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/generate", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        // xhr.onreadystatechange = function () {
+        //     if (xhr.readyState === 4 && xhr.status === 200) {
+        //         var json = JSON.parse(xhr.responseText);
+        //         console.log(json.email + ", " + json.password);
+        //     }
+        // };
+        xhr.send(dataJSON);
+    }
+
+    window.onload = function () {
+        if (typeof Storage !== "undefined") {
+            if (typeof localStorage["main-form-data"] !== "undefined") {
+                const stored = JSON.parse(localStorage.getItem('main-form-data'));
+                for (const name in stored) {
+                    const elems = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
+                    if (elems.length < 1) {
+                        continue;
+                    }
+                    elems[0].value = stored[name];
+                }
+            }
+        }
+    };
+</script>
+</body>
+</html>

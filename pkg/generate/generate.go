@@ -9,6 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
@@ -25,7 +26,7 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	if in.Options.Debug {
+	if in.Debug {
 		fmt.Printf("\nDONE\n")
 	}
 
@@ -33,10 +34,10 @@ func Generate(c echo.Context) (err error) {
 	return
 }
 
-func Run(in *InputData) (err error) {
-	_ = os.Mkdir(in.Params.OutputDir, os.ModePerm)
+func Run(in *opts.Options) (err error) {
+	_ = os.Mkdir(in.OutputDir, os.ModePerm)
 
-	model, err := sd.NewModel(&in.Options)
+	model, err := sd.NewModel(in)
 	if err != nil {
 		return
 	}
@@ -44,18 +45,18 @@ func Run(in *InputData) (err error) {
 
 	// println(model.GetSystemInfo())
 
-	err = model.LoadFromFile(in.Params.ModelPath)
+	err = model.LoadFromFile(in.ModelPath)
 	if err != nil {
 		return
 	}
 
-	filenames, err := model.Predict(&in.Params, in.Options.Debug)
+	filenames, err := model.Predict(in)
 	if err != nil {
 		return
 	}
 	model.Close()
 
-	if in.Params.WithUpscale {
+	if in.WithUpscale {
 		err = Upscale(model, in, filenames)
 		if err != nil {
 			return
@@ -65,8 +66,8 @@ func Run(in *InputData) (err error) {
 	return
 }
 
-func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
-	err = model.LoadUpscaleModel(in.Params.UpscalePath)
+func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {
+	err = model.LoadUpscaleModel(in.UpscalePath)
 	if err != nil {
 		return
 	}
@@ -75,13 +76,13 @@ func Upscale(model *sd.Model, in *InputData, filenames []string) (err error) {
 	var total = len(filenames)
 	var wg = new(sync.WaitGroup)
 	for i, file := range filenames {
-		var filenameIn = filepath.Join(in.Params.OutputDir, file)
+		var filenameIn = filepath.Join(in.OutputDir, file)
 		var filenameOut = filenameIn
-		if !in.Params.DeleteUpscaled {
-			filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)
+		if !in.DeleteUpscaled {
+			filenameOut = filepath.Join(in.OutputDir, "u-"+file)
 		}
 
-		if in.Options.Debug {
+		if in.Debug {
 			fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
 		}
 
