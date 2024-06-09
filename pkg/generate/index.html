@@ -7,21 +7,15 @@
 </head>
 
 <body>
-<form id="main-form" method="POST">
-    <table>
+<form id="main-form">
+    <table style="width: 1%;">
         <tr>
-            <td style="width: 50%;">
-                <label>
-                    Prompt:<br/>
-                    <textarea name="prompt" cols="40" rows="10"></textarea>
-                </label><br/>
-
+            <td style="width: 400px; text-align: right; vertical-align: top;">
                 <label>
                     Negative prompt:<br/>
                     <textarea name="negative_prompt" cols="40" rows="10"></textarea>
                 </label><br/>
-            </td>
-            <td style="text-align: right;">
+
                 <label>
                     Model path:
                     <input type="text" name="model_path" value=""/>
@@ -47,10 +41,14 @@
                     <input type="number" name="height" value="768"/>
                 </label><br/>
 
-
                 <label>
                     CFG scale:
                     <input type="number" name="cfg_scale" value="7"/>
+                </label><br/>
+
+                <label>
+                    Seed:
+                    <input type="number" name="seed" value="-1"/>
                 </label><br/>
 
                 <label>
@@ -63,11 +61,19 @@
                     <input type="number" name="batch_count" value="1"/>
                 </label><br/>
             </td>
+
+            <td style="width: 1%;">
+                <label>
+                    Prompt:<br/>
+                    <textarea name="prompt" cols="40" rows="40"></textarea>
+                </label><br/>
+
+                <div style="text-align: right;">
+                    <button type="submit">Send</button>
+                </div>
+            </td>
         </tr>
     </table>
-
-
-    <button type="submit">Send</button>
 </form>
 
 <script type="text/javascript">
