@@ -90,13 +90,9 @@
 
 <script type="text/javascript">
     const form = document.getElementById("main-form")
-    form.addEventListener("submit", formSend);
-
     const preview = document.getElementById("preview")
 
-    function formSend(event) {
-        event.preventDefault();
-
+    function prepFormData() {
         let data = {};
         for (const el of form.elements) {
             if (el.name === "") {
@@ -123,10 +119,21 @@
             data[el.name] = value;
         }
 
-        let dataJSON = JSON.stringify(data)
+        return data
+    }
+
+    function formSave(data) {
+        localStorage.setItem('main-form-data', JSON.stringify(data));
+    }
+
+    function formSend(event) {
+        event.preventDefault();
+
+        const data = prepFormData()
+        const dataJSON = JSON.stringify(data)
 
         // Save form data
-        localStorage.setItem('main-form-data', dataJSON);
+        formSave(data)
 
         // Send to server
         let xhr = new XMLHttpRequest();
@@ -134,9 +141,7 @@
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
-
                 const resp = JSON.parse(xhr.responseText);
-
                 if (resp['filenames'] === "undefined") {
                     return;
                 }
@@ -160,6 +165,9 @@
     }
 
     window.onload = function () {
+        form.addEventListener("submit", formSend);
+        document.addEventListener("keydown", handleShortcut);
+
         if (typeof Storage !== "undefined") {
             if (typeof localStorage["main-form-data"] !== "undefined") {
                 const stored = JSON.parse(localStorage.getItem('main-form-data'));
@@ -176,11 +184,12 @@
 
     function handleShortcut(event) {
         if (event.ctrlKey && event.key === "s") {
-            formSend(event)
+            event.preventDefault();
+
+            const data = prepFormData();
+            formSave(data);
         }
     }
-
-    document.addEventListener("keydown", handleShortcut);
 
     function setStatus(status) {
         document.getElementById("status").textContent = status
