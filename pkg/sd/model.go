@@ -24,10 +24,6 @@ type Model struct {
 
 	esrganPath  string
 	upscalerCtx *bind.CUpScalerCtx
-
-	// diffusionModelPath string
-	// isAutoLoad         bool
-	// dylibPath          string
 }
 
 func NewModel(options *opts.Options) (model *Model, err error) {
@@ -56,13 +52,7 @@ func (sd *Model) Close() {
 		sd.ctx = nil
 	}
 
-	var err = sd.cSD.Close()
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	return
+	sd.cSD.Close()
 }
 
 func (sd *Model) LoadFromFile(path string) (err error) {
