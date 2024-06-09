@@ -13,16 +13,32 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
+type generateResp struct {
+	Filenames []string `json:"filenames,omitempty"`
+	Error     string   `json:"error,omitempty"`
+}
+
 func Generate(c echo.Context) (err error) {
+	defer func() {
+		if err != nil {
+			println()
+			fmt.Printf("\n\nERROR: %s \n\n", err.Error())
+		}
+	}()
+
+	var resp = generateResp{}
+
 	in, err := getInput(c)
 	if err != nil {
-		println(err.Error())
+		resp.Error = err.Error()
+		_ = c.JSON(http.StatusOK, resp)
 		return
 	}
 
-	err = Run(in)
+	resp.Filenames, err = Run(in)
 	if err != nil {
-		println(err.Error())
+		resp.Error = err.Error()
+		_ = c.JSON(http.StatusOK, resp)
 		return
 	}
 
@@ -30,11 +46,11 @@ func Generate(c echo.Context) (err error) {
 		fmt.Printf("\nDONE\n")
 	}
 
-	_ = c.JSON(http.StatusOK, "OK")
+	_ = c.JSON(http.StatusOK, resp)
 	return
 }
 
-func Run(in *opts.Options) (err error) {
+func Run(in *opts.Options) (filenames []string, err error) {
 	_ = os.Mkdir(in.OutputDir, os.ModePerm)
 
 	model, err := sd.NewModel(in)
@@ -50,7 +66,7 @@ func Run(in *opts.Options) (err error) {
 		return
 	}
 
-	filenames, err := model.Predict(in)
+	filenames, err = model.Predict(in)
 	if err != nil {
 		return
 	}

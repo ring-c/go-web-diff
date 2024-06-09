@@ -3,17 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>GWD</title>
+    <title>GWD - Ready</title>
+
+    <style>
+        #preview {
+            display: flex;
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 
 <body>
 <form id="main-form">
-    <table style="width: 1%;">
+    <table style="width: 100%;">
         <tr>
-            <td style="width: 400px; text-align: right; vertical-align: top;">
+            <td style="width: 1%; text-align: right; vertical-align: top;">
                 <label>
                     Negative prompt:<br/>
-                    <textarea name="negative_prompt" cols="40" rows="10"></textarea>
+                    <textarea name="negative_prompt" cols="32" rows="10"></textarea>
                 </label><br/>
 
                 <label>
@@ -60,17 +67,22 @@
                     Batch count:
                     <input type="number" name="batch_count" value="1"/>
                 </label><br/>
+
             </td>
 
-            <td style="width: 1%;">
+            <td style="width: 1%; vertical-align: top;">
                 <label>
                     Prompt:<br/>
-                    <textarea name="prompt" cols="40" rows="40"></textarea>
+                    <textarea name="prompt" cols="32" rows="40"></textarea>
                 </label><br/>
 
                 <div style="text-align: right;">
-                    <button type="submit">Send</button>
+                    <span id="status"></span>&nbsp;<button type="submit">Send</button>
                 </div>
+            </td>
+
+            <td id="preview" style="vertical-align: top;">
+
             </td>
         </tr>
     </table>
@@ -79,6 +91,8 @@
 <script type="text/javascript">
     const form = document.getElementById("main-form")
     form.addEventListener("submit", formSend);
+
+    const preview = document.getElementById("preview")
 
     function formSend(event) {
         event.preventDefault();
@@ -118,13 +132,31 @@
         let xhr = new XMLHttpRequest();
         xhr.open("POST", "/generate", true);
         xhr.setRequestHeader("Content-Type", "application/json");
-        // xhr.onreadystatechange = function () {
-        //     if (xhr.readyState === 4 && xhr.status === 200) {
-        //         var json = JSON.parse(xhr.responseText);
-        //         console.log(json.email + ", " + json.password);
-        //     }
-        // };
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+
+                const resp = JSON.parse(xhr.responseText);
+
+                if (resp['filenames'] === "undefined") {
+                    return;
+                }
+
+                let images = "<br\>";
+                for (const img of resp['filenames']) {
+                    // language=HTML
+                    images += "" +
+                        "<a target='_blank' href='output/" + img + "'>" +
+                        "   <img src='output/" + img + "' alt='" + img + "' style='width: " + data.width / 4 + "px; height: " + data.height / 4 + "px;'/>" +
+                        "</a>";
+                }
+
+                preview.innerHTML = images
+            }
+
+            setStatus("Done");
+        };
         xhr.send(dataJSON);
+        setStatus("Running ...");
     }
 
     window.onload = function () {
@@ -141,6 +173,19 @@
             }
         }
     };
+
+    function handleShortcut(event) {
+        if (event.ctrlKey && event.key === "s") {
+            formSend(event)
+        }
+    }
+
+    document.addEventListener("keydown", handleShortcut);
+
+    function setStatus(status) {
+        document.getElementById("status").textContent = status
+        document.title = "GWD - " + status
+    }
 </script>
 </body>
 </html>
