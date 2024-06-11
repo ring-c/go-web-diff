@@ -156,9 +156,10 @@
                 }
 
                 preview.innerHTML = images
+                setStatus("Done");
+            } else {
+                setStatus("Error");
             }
-
-            setStatus("Done");
         };
         xhr.send(dataJSON);
         setStatus("Running ...");
