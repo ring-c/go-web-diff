@@ -124,6 +124,7 @@
 
     function formSave(data) {
         localStorage.setItem('main-form-data', JSON.stringify(data));
+        setStatus("Saved");
     }
 
     function formSend(event) {
