@@ -9,84 +9,91 @@
         #preview {
             display: flex;
             flex-wrap: wrap;
+            float: left;
         }
     </style>
 </head>
 
 <body>
-<form id="main-form">
-    <table style="width: 100%;">
-        <tr>
-            <td style="width: 1%; text-align: right; vertical-align: top;">
-                <label>
-                    Negative prompt:<br/>
-                    <textarea name="negative_prompt" style="width: 285px; height: 540px;"></textarea>
-                </label><br/>
+<div style="text-align: right; width: 286px; float: left;">
+    <form id="main-form">
+        <label>
+            Prompt:<br/>
+            <textarea name="prompt" cols="30" rows="30"></textarea>
+        </label><br/>
 
-                <label>
-                    Model path:
-                    <input type="text" name="model_path" value=""/>
-                </label><br/>
+        <div style="text-align: right;">
+            <span id="status"></span>&nbsp;<button type="submit">Send</button>
+        </div>
 
-                <label>
-                    Lora model dir:
-                    <input type="text" name="lora_model_dir" value=""/>
-                </label><br/>
 
-                <label>
-                    VAE path:
-                    <input type="text" name="vae_path" value=""/>
-                </label><br/>
+        <hr/>
+        <label>
+            Negative prompt:<br/>
+            <textarea name="negative_prompt" cols="30" rows="6"></textarea>
+        </label><br/>
 
-                <label>
-                    Width:
-                    <input type="number" name="width" value="1024"/>
-                </label><br/>
+        <label>
+            Model path:
+            <input type="text" name="model_path" value=""/>
+        </label><br/>
 
-                <label>
-                    Height:
-                    <input type="number" name="height" value="768"/>
-                </label><br/>
+        <label>
+            Lora dir:
+            <input type="text" name="lora_model_dir" value=""/>
+        </label><br/>
 
-                <label>
-                    CFG scale:
-                    <input type="number" name="cfg_scale" value="7"/>
-                </label><br/>
+        <label>
+            VAE path:
+            <input type="text" name="vae_path" value=""/>
+        </label><br/>
 
-                <label>
-                    Seed:
-                    <input type="number" name="seed" value="-1"/>
-                </label><br/>
+        <label>
+            Width:
+            <input type="number" name="width" value="1024"/>
+        </label><br/>
 
-                <label>
-                    Sample steps:
-                    <input type="number" name="sample_steps" value="24"/>
-                </label><br/>
+        <label>
+            Height:
+            <input type="number" name="height" value="768"/>
+        </label><br/>
 
-                <label>
-                    Batch count:
-                    <input type="number" name="batch_count" value="1"/>
-                </label><br/>
+        <label>
+            CFG scale:
+            <input type="number" name="cfg_scale" value="7"/>
+        </label><br/>
 
-            </td>
+        <label>
+            Seed:
+            <input type="number" name="seed" value="-1"/>
+        </label><br/>
 
-            <td style="width: 1%; vertical-align: top;">
-                <label>
-                    Prompt:<br/>
-                    <textarea name="prompt" cols="32" rows="40"></textarea>
-                </label><br/>
+        <label>
+            Sample steps:
+            <input type="number" name="sample_steps" value="24"/>
+        </label><br/>
 
-                <div style="text-align: right;">
-                    <span id="status"></span>&nbsp;<button type="submit">Send</button>
-                </div>
-            </td>
+        <label>
+            Batch count:
+            <input type="number" name="batch_count" value="1"/>
+        </label><br/>
 
-            <td id="preview" style="vertical-align: top;">
 
-            </td>
-        </tr>
-    </table>
-</form>
+        <label>
+            Show preview:
+            <input type="checkbox" name="show_preview" checked/>
+        </label><br/>
+
+        <label>
+            Full width preview:
+            <input type="checkbox" name="full_width_preview" checked/>
+        </label><br/>
+    </form>
+</div>
+
+<div id="preview">
+    <br/>
+</div>
 
 <script type="text/javascript">
     const form = document.getElementById("main-form")
@@ -137,21 +144,28 @@
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                const resp = JSON.parse(xhr.responseText);
-                if (resp['filenames'] === "undefined") {
-                    return;
-                }
 
+                // Preview
                 let images = "<br\>";
-                for (const img of resp['filenames']) {
-                    // language=HTML
-                    images += "" +
-                        "<a target='_blank' href='output/" + img + "'>" +
-                        "   <img src='output/" + img + "' alt='" + img + "' style='width: " + data.width / 4 + "px; height: " + data.height / 4 + "px;'/>" +
-                        "</a>";
-                }
+                if (data.show_preview) {
+                    const resp = JSON.parse(xhr.responseText);
+                    if (resp['filenames'] === "undefined") {
+                        return;
+                    }
 
+                    for (const img of resp['filenames']) {
+                        // language=HTML
+                        images += "<a target='_blank' href='output/" + img + "'>"
+                        if (data.full_width_preview) {
+                            images += "<img src='output/" + img + "' alt='" + img + "'/>"
+                        } else {
+                            images += "<img src='output/" + img + "' alt='" + img + "' style='width: " + data.width / 4 + "px; height: " + data.height / 4 + "px;'/>"
+                        }
+                        images += "</a>"
+                    }
+                }
                 preview.innerHTML = images
+
                 setStatus("Done");
             } else {
                 setStatus("Error");
@@ -169,15 +183,25 @@
             if (typeof localStorage["main-form-data"] !== "undefined") {
                 const stored = JSON.parse(localStorage.getItem('main-form-data'));
                 for (const name in stored) {
-                    const elems = form.querySelectorAll(`[name="${CSS.escape(name)}"]`);
+                    const elems = form.querySelectorAll(`[name="${CSS.escape(name)}"]`)
                     if (elems.length < 1) {
-                        continue;
+                        continue
                     }
-                    elems[0].value = stored[name];
+                    let elem = elems[0]
+
+                    switch (elem.type) {
+                        case "checkbox":
+                            elem.checked = stored[name];
+                            break;
+
+                        default:
+                            elem.value = stored[name];
+                    }
+
                 }
             }
         }
-    };
+    }
 
     function handleShortcut(event) {
         if (event.ctrlKey && event.key === "s") {
