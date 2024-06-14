@@ -99,24 +99,19 @@
                 continue;
             }
 
-            let value;
+            data[el.name] = el.value || '';
+
             switch (el.type) {
                 case 'checkbox':
                 case 'radio':
-                    value = el.checked;
+                    data[el.name] = el.checked;
                     break;
 
                 case 'number':
                 case 'range':
-                    value = +(el.value || 0);
-                    break;
-
-                default:
-                    value = el.value || ''
+                    data[el.name] = el.value.toLocaleString();
                     break;
             }
-
-            data[el.name] = value;
         }
 
         return data
