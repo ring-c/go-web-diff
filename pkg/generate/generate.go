@@ -43,7 +43,7 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.Debug {
-		fmt.Printf("\nDONE\n")
+		fmt.Printf("\nDONE\n\n")
 	}
 
 	_ = c.JSON(http.StatusOK, resp)
