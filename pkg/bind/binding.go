@@ -52,7 +52,12 @@ type CStableDiffusionImpl struct {
 		inputIdImagesPath string,
 	) unsafe.Pointer
 
-	genGO func(ctx unsafe.Pointer) unsafe.Pointer
+	genGO func(
+		ctx unsafe.Pointer,
+		prompt string,
+		width int,
+		height int,
+	) unsafe.Pointer
 
 	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
@@ -128,6 +133,9 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 func (c *CStableDiffusionImpl) PredictImageGO(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result *image.RGBA) {
 	var cImages = c.genGO(
 		ctx.CTX,
+		prompt,
+		width,
+		height,
 	)
 
 	var img = goImageSlice(cImages, 1)
