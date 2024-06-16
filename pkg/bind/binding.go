@@ -52,6 +52,8 @@ type CStableDiffusionImpl struct {
 		inputIdImagesPath string,
 	) unsafe.Pointer
 
+	genGO func(ctx unsafe.Pointer) unsafe.Pointer
+
 	sdGetSystemInfo  func() unsafe.Pointer
 	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
 
@@ -80,6 +82,9 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	}
 
 	purego.RegisterLibFunc(&impl.txt2img, libSd, "txt2img")
+
+	purego.RegisterLibFunc(&impl.genGO, libSd, "gen_go")
+
 	purego.RegisterLibFunc(&impl.sdGetSystemInfo, libSd, "sd_get_system_info")
 	purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
 
@@ -114,6 +119,15 @@ func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt str
 		0,
 		false,
 		"",
+	)
+
+	var img = goImageSlice(cImages, 1)
+	return bytesToImage(img[0].Data, int(img[0].Width), int(img[0].Height))
+}
+
+func (c *CStableDiffusionImpl) PredictImageGO(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result *image.RGBA) {
+	var cImages = c.genGO(
+		ctx.CTX,
 	)
 
 	var img = goImageSlice(cImages, 1)
