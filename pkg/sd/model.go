@@ -168,6 +168,76 @@ func (sd *Model) Predict(options *opts.Options) (filenames []string, err error) 
 	return
 }
 
+func (sd *Model) PredictGO(options *opts.Options) (filenames []string, err error) {
+	filenames = make([]string, 0)
+	if sd.ctx == nil {
+		err = errors.New("model not loaded")
+		return
+	}
+
+	if options == nil {
+		err = errors.New("options is nil")
+		return
+	}
+
+	if options.Width%8 != 0 || options.Height%8 != 0 {
+		err = errors.New("width and height must be multiples of 8")
+		return
+	}
+
+	var seed = options.Seed
+	if seed == -1 {
+		seed = rand.Int63()
+	}
+
+	var timeSave = time.Now().Unix()
+	for i := 0; i < options.BatchCount; i++ {
+		if options.Debug {
+			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, options.BatchCount, seed)
+		}
+
+		var data = sd.cSD.PredictImageGO(
+			sd.ctx,
+			options.Prompt,
+			options.NegativePrompt,
+			options.ClipSkip,
+			options.CfgScale,
+			options.Width,
+			options.Height,
+			options.SampleMethod,
+			options.SampleSteps,
+			seed,
+		)
+
+		if data.Bounds().Max.X == 0 || data.Bounds().Max.Y == 0 {
+			println("err generate, size 0x0")
+			continue
+		}
+
+		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
+		var file *os.File
+		file, err = os.Create(path.Join(options.OutputDir, filename))
+		if err != nil {
+			return
+		}
+
+		err = imageToWriter(data, file)
+		if err != nil {
+			return
+		}
+
+		err = file.Close()
+		if err != nil {
+			return
+		}
+
+		filenames = append(filenames, filename)
+		seed++
+	}
+
+	return
+}
+
 func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	var enc = png.Encoder{
 		CompressionLevel: png.BestSpeed,
