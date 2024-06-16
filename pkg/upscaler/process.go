@@ -7,12 +7,11 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/ring-c/go-web-diff/pkg/generate"
+	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-func (u *Upscaler) Process(in *generate.InputData, file string) (err error) {
-
-	var filenameIn = filepath.Join(in.Params.OutputDir, file)
+func (u *Upscaler) Process(opts *opts.Options, file string) (err error) {
+	var filenameIn = filepath.Join(opts.OutputDir, file)
 	// var filenameOut = filenameIn
 	// if !in.Params.DeleteUpscaled {
 	// 	filenameOut = filepath.Join(in.Params.OutputDir, "u-"+file)

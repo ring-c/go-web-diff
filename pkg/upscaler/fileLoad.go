@@ -1,3 +1,5 @@
+//go:build no
+
 package upscaler
 
 import (

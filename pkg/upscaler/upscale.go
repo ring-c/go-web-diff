@@ -28,7 +28,6 @@ func (u *Upscaler) upscale(inputImage image.Image) (upscaledImage image.Image, e
 	fmt.Printf("upscale work buffer size: %.2f MB\n", float64(memSize)/1024/1024)
 
 	var input = u.GGML.NewTensor4D(u.upscaleCTX, 0, inputWidth, inputHeight, 3, 1)
-
 	u.imageToTensor(inputImage, input)
 
 	/*
