@@ -13,6 +13,8 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
+var model *sd.Model
+
 type generateResp struct {
 	Filenames []string `json:"filenames,omitempty"`
 	Error     string   `json:"error,omitempty"`
@@ -50,14 +52,20 @@ func Generate(c echo.Context) (err error) {
 	return
 }
 
+func ModelClose() {
+	model.Close()
+}
+
 func Run(in *opts.Options) (filenames []string, err error) {
 	_ = os.Mkdir(in.OutputDir, os.ModePerm)
-
-	model, err := sd.NewModel(in)
-	if err != nil {
-		return
+	if model == nil {
+		model, err = sd.NewModel(in)
+		if err != nil {
+			return
+		}
 	}
-	defer model.Close()
+
+	// defer model.Close()
 
 	// println(model.GetSystemInfo())
 
@@ -70,7 +78,7 @@ func Run(in *opts.Options) (filenames []string, err error) {
 	if err != nil {
 		return
 	}
-	model.Close()
+	// model.Close()
 
 	if in.WithUpscale {
 		err = Upscale(model, in, filenames)
