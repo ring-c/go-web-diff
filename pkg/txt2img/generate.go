@@ -40,7 +40,7 @@ type FirstStageModel struct {
 	ParamsBuffer []float32
 }
 
-func GenGo(sdCtx *SDContext, prompt string, width, height int) *SDImage {
+func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height int) *SDImage {
 	negativePrompt := ""
 	clipSkip := 2
 	cfgScale := 1.0
