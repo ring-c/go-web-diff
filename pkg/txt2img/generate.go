@@ -1,6 +1,7 @@
 package txt2img
 
 import (
+	"errors"
 	"math/rand"
 
 	"github.com/labstack/gommon/log"
@@ -40,25 +41,20 @@ type FirstStageModel struct {
 	ParamsBuffer []float32
 }
 
-func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height int) *SDImage {
-	negativePrompt := ""
+func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height int) (result *SDImage, err error) {
+	// negativePrompt := ""
 	clipSkip := 2
-	cfgScale := 1.0
+	// cfgScale := 1.0
 	sampleStepsInput := 16
 	seed := int64(42)
 
-	params := GGMLInitParams{
-		MemSize:   10 * 1024 * 1024,
-		MemBuffer: nil,
-		NoAlloc:   false,
-	}
-	params.MemSize += int64(width * height * 3 * 4)
-	params.MemSize *= 1
+	var memSize uint64 = 10 * 1024 * 1024
+	memSize += uint64(width * height * 3 * 4)
 
-	workCtx := GGMLInit(params)
+	workCtx := gen.GGML.InitGo(memSize)
 	if workCtx == nil {
-		log.Error("ggml_init() failed")
-		return nil
+		err = errors.New("gen.GGML.InitGo() failed")
+		return
 	}
 
 	sigmas := sdCtx.SD.Denoiser.Schedule.GetSigmas(sampleStepsInput)
@@ -106,9 +102,9 @@ func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height in
 		Channel: 3,
 		Data:    SDTensorToImage(decodedImages[0]),
 	}
-	GGMLFree(workCtx)
+	// GGMLFree(workCtx)
 
-	return result
+	return
 }
 
 type SDImage struct {
@@ -124,26 +120,6 @@ type GGMLInitParams struct {
 	NoAlloc   bool
 }
 
-func GGMLInit(params GGMLInitParams) *GGMLContext {
-	// Implement GGMLInit function
-	return &GGMLContext{}
-}
-
-func (s *SDModel) GetLearnedCondition(ctx *GGMLContext, prompt string, clipSkip, width, height int) ConditionPair {
-	// Implement GetLearnedCondition method
-	return ConditionPair{nil, nil}
-}
-
-func (s *SDModel) SampleGo(ctx *GGMLContext, xT, c, cVector *GGMLTensor, sigmas []float32) *GGMLTensor {
-	// Implement SampleGo method
-	return &GGMLTensor{}
-}
-
-func (s *SDModel) DecodeFirstStage(ctx *GGMLContext, x0 *GGMLTensor) *GGMLTensor {
-	// Implement DecodeFirstStage method
-	return &GGMLTensor{}
-}
-
 func (s *CondStageModel) FreeParamsBuffer() {
 	// Implement FreeParamsBuffer method
 }
@@ -154,29 +130,6 @@ func (s *DiffusionModel) FreeParamsBuffer() {
 
 func (s *FirstStageModel) FreeParamsBuffer() {
 	// Implement FreeParamsBuffer method
-}
-
-func (s *Denoiser) GetSigmas(sampleStepsInput int) []float32 {
-	// Implement GetSigmas method
-	return s.Schedule.Sigmas
-}
-
-func GGMLNewTensor4D(ctx *GGMLContext, dtype GGMLType, w, h, c, n int) *GGMLTensor {
-	// Implement GGMLNewTensor4D function
-	return &GGMLTensor{}
-}
-
-func GGMLTensorSetF32Randn(t *GGMLTensor, rng *rand.Rand) {
-	// Implement GGMLTensorSetF32Randn function
-}
-
-func GGMLFree(ctx *GGMLContext) {
-	// Implement GGMLFree function
-}
-
-func SDTensorToImage(t *GGMLTensor) []byte {
-	// Implement SDTensorToImage function
-	return nil
 }
 
 type GGMLContext struct {
