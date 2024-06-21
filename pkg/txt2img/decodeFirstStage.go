@@ -1,5 +1,6 @@
-package txt2img
+//go:build tests
 
+package txt2img
 
 func computeFirstStage(workCtx *ggml.Context, x *ggml.Tensor, decode bool) *ggml.Tensor {
 	W := x.Ne[0]
