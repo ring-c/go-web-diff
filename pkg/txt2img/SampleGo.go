@@ -1,22 +1,11 @@
+//go:build tests
+
 package txt2img
 
 import (
 	"math"
 	"math/rand"
 )
-
-type GGMLTensor struct {
-	data []float32
-	ne   [4]int
-}
-
-type GGMLContext struct{}
-
-type DiffusionModel struct {
-	schedule *Schedule
-}
-
-type Schedule struct{}
 
 func (s *Schedule) sigmaToT(sigma float32) float32 {
 	// Implement the sigma to t conversion logic
