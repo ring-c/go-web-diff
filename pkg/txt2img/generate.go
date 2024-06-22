@@ -29,10 +29,6 @@ type Schedule struct {
 	Sigmas []float32
 }
 
-type CondStageModel struct {
-	ParamsBuffer []float32
-}
-
 type DiffusionModel struct {
 	schedule     *Schedule
 	ParamsBuffer []float32
@@ -45,9 +41,19 @@ type FirstStageModel struct {
 	ParamsBuffer []float32
 }
 
-func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height int) (result *SDImage, err error) {
+const (
+	UNK_TOKEN_ID int = 49407
+	BOS_TOKEN_ID int = 49406
+	EOS_TOKEN_ID int = 49407
+	PAD_TOKEN_ID int = 49407
+)
+
+// var encoder = make(map[string]int)
+
+func (gen *Generator) Generate(prompt string, width, height int) (result *SDImage, err error) {
+
 	// negativePrompt := ""
-	// clipSkip := 2
+	clipSkip := 2
 	// cfgScale := 1.0
 	var sampleStepsInput uint32 = 16
 	// seed := int64(42)
@@ -67,55 +73,54 @@ func (gen *Generator) Generate(sdCtx *SDContext, prompt string, width, height in
 
 	spew.Dump(sigmas)
 
+	// Get learned condition
+	c, cVector := getLearnedCondition(workCtx, prompt, clipSkip, width, height, false)
+
+	spew.Dump(c)
+	spew.Dump(cVector)
+
 	/*
 
-		// Get learned condition
-		c, cVector := getLearnedCondition(workCtx, prompt, clipSkip, width, height, false)
 
-		spew.Dump(c)
-		spew.Dump(cVector)
+		if sdCtx.SD.FreeParamsImmediately {
+			sdCtx.SD.CondStageModel.FreeParamsBuffer()
+		}
 
+		// Sample
+		C, W, H := 4, width/8, height/8
 
+		// BATCH START
+		sdCtx.SD.RNG.Seed(seed)
+		xT := GGMLNewTensor4D(workCtx, GGMLTypeF32, W, H, C, 1)
+		GGMLTensorSetF32Randn(xT, sdCtx.SD.RNG)
 
-			if sdCtx.SD.FreeParamsImmediately {
-				sdCtx.SD.CondStageModel.FreeParamsBuffer()
-			}
+		x0 := sdCtx.SD.SampleGo(workCtx, xT, c, cVector, sigmas)
 
-			// Sample
-			C, W, H := 4, width/8, height/8
+		// BATCH END
 
-			// BATCH START
-			sdCtx.SD.RNG.Seed(seed)
-			xT := GGMLNewTensor4D(workCtx, GGMLTypeF32, W, H, C, 1)
-			GGMLTensorSetF32Randn(xT, sdCtx.SD.RNG)
+		if sdCtx.SD.FreeParamsImmediately {
+			sdCtx.SD.DiffusionModel.FreeParamsBuffer()
+		}
 
-			x0 := sdCtx.SD.SampleGo(workCtx, xT, c, cVector, sigmas)
+		// Decode to image
+		decodedImages := make([]*GGMLTensor, 0)
+		img := sdCtx.SD.DecodeFirstStage(workCtx, x0)
+		if img != nil {
+			decodedImages = append(decodedImages, img)
+		}
 
-			// BATCH END
+		log.Info("decode_first_stage completed")
+		if sdCtx.SD.FreeParamsImmediately && !sdCtx.SD.UseTinyAutoencoder {
+			sdCtx.SD.FirstStageModel.FreeParamsBuffer()
+		}
 
-			if sdCtx.SD.FreeParamsImmediately {
-				sdCtx.SD.DiffusionModel.FreeParamsBuffer()
-			}
-
-			// Decode to image
-			decodedImages := make([]*GGMLTensor, 0)
-			img := sdCtx.SD.DecodeFirstStage(workCtx, x0)
-			if img != nil {
-				decodedImages = append(decodedImages, img)
-			}
-
-			log.Info("decode_first_stage completed")
-			if sdCtx.SD.FreeParamsImmediately && !sdCtx.SD.UseTinyAutoencoder {
-				sdCtx.SD.FirstStageModel.FreeParamsBuffer()
-			}
-
-			result := &SDImage{
-				Width:   width,
-				Height:  height,
-				Channel: 3,
-				Data:    SDTensorToImage(decodedImages[0]),
-			}
-			// GGMLFree(workCtx)
+		result := &SDImage{
+			Width:   width,
+			Height:  height,
+			Channel: 3,
+			Data:    SDTensorToImage(decodedImages[0]),
+		}
+		// GGMLFree(workCtx)
 	*/
 	return
 }

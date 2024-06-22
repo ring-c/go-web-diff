@@ -1,41 +1,20 @@
-//go:build tests
-
 package txt2img
 
 import (
-	"bytes"
-	"fmt"
 	"math"
 	"time"
 	"unsafe"
 )
 
-type ggmlContext struct{}
 type ggmlTensor struct {
 	data []float32
 	ne   [3]int
 }
 
-const (
-	UNK_TOKEN_ID int = 49407
-	BOS_TOKEN_ID int = 49406
-	EOS_TOKEN_ID int = 49407
-	PAD_TOKEN_ID int = 49407
-)
-
 var (
-	n_threads        = 4
-	cond_stage_model = &CondStageModel{}
-	diffusion_model  = &DiffusionModel{}
+	n_threads       = 4
+	diffusion_model = &DiffusionModel{}
 )
-
-func (c *CondStageModel) setClipSkip(clipSkip int) {
-	panic("fix me")
-}
-
-func (c *CondStageModel) compute(nThreads int, inputIds, inputIds2 *ggmlTensor, maxTokenIdx int, flag bool, chunkHiddenStates **ggmlTensor, workCtx unsafe.Pointer) {
-	panic("fix me")
-}
 
 func ggmlTimeMs() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
@@ -110,7 +89,6 @@ func getLearnedCondition(workCtx unsafe.Pointer, text string, clipSkip, width, h
 
 func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []float32, clipSkip, width, height int, forceZeroEmbeddings bool) (*ggmlTensor, *ggmlTensor) {
 	cond_stage_model.setClipSkip(clipSkip)
-	t0 := ggmlTimeMs()
 	var hiddenStates, chunkHiddenStates, pooled *ggmlTensor
 	var hiddenStatesVec []float32
 
@@ -124,10 +102,13 @@ func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []f
 		var inputIds2 *ggmlTensor
 		var maxTokenIdx int
 		// if version == VERSION_XL {
-		it := bytes.IndexByte([]byte(fmt.Sprint(chunkTokens)), EOS_TOKEN_ID)
-		if it != -1 {
-			for i := it + 1; i < len(chunkTokens); i++ {
+
+		// FIXME?
+		var it = 0
+		for i, token := range chunkTokens {
+			if token == EOS_TOKEN_ID {
 				chunkTokens[i] = 0
+				it = i
 			}
 		}
 
@@ -141,8 +122,6 @@ func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []f
 			cond_stage_model.compute(n_threads, inputIds, inputIds2, maxTokenIdx, true, &pooled, workCtx)
 		}
 
-		t1 := ggmlTimeMs()
-		fmt.Printf("computing condition graph completed, taking %d ms\n", t1-t0)
 		result := ggmlDupTensor(workCtx, chunkHiddenStates)
 		{
 			originalMean := ggmlTensorMean(chunkHiddenStates)

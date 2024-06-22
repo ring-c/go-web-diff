@@ -8,50 +8,25 @@ import (
 	"strings"
 )
 
-func tokenize(text string, padding bool) ([]int, []float32) {
-	var tokens = make([]int, 0)
-	var weights = make([]float32, 0)
+func tokenize(text string, padding bool) (tokens []int, weights []float32) {
+	tokens = make([]int, 0)
+	weights = make([]float32, 0)
+
 	for _, item := range parsePromptAttention(text) {
 
 		var currText = item.Text
 		var currWeight = item.Value
 
-		currTokens := tokenizer.Encode(currText, func(str *string, bpeTokens *[]int32) bool {
-			wordEnd := strings.Index(str, ",")
-			var embdName string
-			if wordEnd == -1 {
-				embdName = strings.TrimSpace(*str)
-			} else {
-				embdName = strings.TrimSpace((*str)[:wordEnd])
-			}
-			embdPath := getFullPath(embdDir, embdName+".pt")
-			if len(embdPath) == 0 {
-				embdPath = getFullPath(embdDir, embdName+".ckpt")
-			}
-			if len(embdPath) == 0 {
-				embdPath = getFullPath(embdDir, embdName+".safetensors")
-			}
-			if len(embdPath) > 0 {
-				if loadEmbedding(embdName, embdPath, bpeTokens) {
-					if wordEnd != -1 {
-						*str = (*str)[wordEnd+1:]
-					} else {
-						*str = ""
-					}
-					return true
-				}
-			}
-			return false
-		})
+		currTokens := encode(currText)
 		tokens = append(tokens, currTokens...)
 		for range currTokens {
 			weights = append(weights, currWeight)
 		}
 	}
 
-	padTokens(&tokens, &weights, maxLength, padding)
+	// padTokens(&tokens, &weights, maxLength, padding)
 
-	return tokens, weights
+	return
 }
 
 func getFullPath(dir, filename string) string {
@@ -113,9 +88,9 @@ func padTokens(tokens []int, weights []float64, maxLength int, padding bool) ([]
 
 		if padding {
 			padTokenID := PAD_TOKEN_ID
-			if version == VERSION_2_X {
-				padTokenID = 0
-			}
+			// if version == VERSION_2_X {
+			// 	padTokenID = 0
+			// }
 			newTokens = append(newTokens, make([]int, length-len(newTokens), padTokenID)...)
 			newWeights = append(newWeights, make([]float64, length-len(newWeights), 1.0)...)
 		}
