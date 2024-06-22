@@ -7,7 +7,7 @@ import (
 
 type promptAttention struct {
 	Text  string
-	Value float64
+	Value float32
 }
 
 func parsePromptAttention(prompt string) (res []promptAttention) {
@@ -16,13 +16,13 @@ func parsePromptAttention(prompt string) (res []promptAttention) {
 	roundBrackets := make([]int, 0)
 	squareBrackets := make([]int, 0)
 
-	roundBracketMultiplier := 1.1
-	squareBracketMultiplier := 1 / 1.1
+	var roundBracketMultiplier float32 = 1.1
+	var squareBracketMultiplier float32 = 1 / 1.1
 
 	reAttention := regexp.MustCompile(`\\\(|\\\)|\\\[|\\\]|\\\\|\\|\(|\[|:([+-]?[.\d]+)\)|\)|\]|[^\\()\[\]:]+|:`)
 	// reBreak := regexp.MustCompile(`\s*\bBREAK\b\s*`)
 
-	multiplyRange := func(startPosition int, multiplier float64) {
+	multiplyRange := func(startPosition int, multiplier float32) {
 		for p := startPosition; p < len(res); p++ {
 			res[p].Value = res[p].Value * multiplier
 		}
@@ -92,7 +92,7 @@ func parsePromptAttention(prompt string) (res []promptAttention) {
 	return
 }
 
-func parseFloat(s string) float64 {
+func parseFloat(s string) float32 {
 	f, _ := strconv.ParseFloat(s, 64)
-	return f
+	return float32(f)
 }

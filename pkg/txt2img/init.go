@@ -4,11 +4,14 @@ import (
 	"github.com/ebitengine/purego"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
+	"github.com/ring-c/go-web-diff/pkg/generate"
 	"github.com/ring-c/go-web-diff/pkg/ggml"
+	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 type Generator struct {
-	GGML ggml.Struct
+	GGML  ggml.Struct
+	Model *sd.Model
 }
 
 func New() (*Generator, error) {
@@ -17,8 +20,17 @@ func New() (*Generator, error) {
 		return nil, err
 	}
 
+	var in = generate.DefaultInput
+	in.ModelPath = "/media/ed/files/sd/diff/models/Stable-diffusion/ponyDiffusionV6XL_v6TurboDPOMerge.safetensors"
+
+	model, err := sd.NewModel(in)
+	if err != nil {
+		return nil, err
+	}
+
 	var impl = Generator{
-		GGML: ggml.Struct{},
+		GGML:  ggml.Struct{},
+		Model: model,
 	}
 
 	purego.RegisterLibFunc(&impl.GGML.InitGo, libSd, "ggml_init_go")
