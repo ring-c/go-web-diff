@@ -1,3 +1,5 @@
+//go:build tests
+
 package txt2img
 
 import (
@@ -50,4 +52,8 @@ func compute(nThreads int, inputIDs, inputIDs2 *ggml.Tensor, maxTokenIdx uint64,
 		return buildGraph(inputIDs, inputIDs2, maxTokenIdx, returnPooled)
 	}
 	GGMLModule.Compute(getGraph, nThreads, true, output, outputCtx)
+}
+
+func (s *CondStageModel) FreeParamsBuffer() {
+	// Implement FreeParamsBuffer method
 }

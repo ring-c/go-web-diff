@@ -1,3 +1,5 @@
+//go:build tests
+
 package txt2img
 
 import (

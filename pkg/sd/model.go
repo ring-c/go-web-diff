@@ -11,6 +11,7 @@ import (
 	"path"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -326,4 +327,8 @@ func (sd *Model) UpscaleImage(wg *sync.WaitGroup, filenameIn, filenameOut string
 	}(wg, data, filenameOut)
 
 	return
+}
+
+func (sd *Model) GetCTX() unsafe.Pointer {
+	return sd.ctx.CTX
 }
