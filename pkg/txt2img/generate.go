@@ -13,7 +13,6 @@ type SDContext struct {
 
 type SDModel struct {
 	Denoiser              *Denoiser
-	CondStageModel        *CondStageModel
 	DiffusionModel        *DiffusionModel
 	FirstStageModel       *FirstStageModel
 	RNG                   *rand.Rand
@@ -55,13 +54,13 @@ func (gen *Generator) Generate(prompt string, width, height int) (result *SDImag
 	// negativePrompt := ""
 	clipSkip := 2
 	// cfgScale := 1.0
-	var sampleStepsInput uint32 = 16
-	// seed := int64(42)
+	var sampleStepsInput = 16
+	seed := uint64(42)
 
 	var memSize uint64 = 10 * 1024 * 1024
 	memSize += uint64(width * height * 3 * 4)
 
-	workCtx := gen.GGML.InitGo(memSize)
+	var workCtx = gen.GGML.InitGo(memSize)
 	if workCtx == nil {
 		err = errors.New("gen.GGML.InitGo() failed")
 		return
@@ -71,32 +70,38 @@ func (gen *Generator) Generate(prompt string, width, height int) (result *SDImag
 
 	sigmas := schedule.GetSigmas(sampleStepsInput)
 
-	spew.Dump(sigmas)
-
 	// Get learned condition
-	c, cVector := getLearnedCondition(workCtx, prompt, clipSkip, width, height, false)
+	// c, cVector := getLearnedCondition(workCtx, prompt, clipSkip, width, height, false)
 
-	spew.Dump(c)
-	spew.Dump(cVector)
+	var pair = gen.GetLearnedCondition(gen.Model.GetCTX(), workCtx, prompt, width, height, clipSkip)
+	var c = gen.PairGet(pair, true)
+	var cVector = gen.PairGet(pair, false)
+
+	// spew.Dump(c)
+	// spew.Dump(cVector)
+
+	// if sdCtx.SD.FreeParamsImmediately {
+	// 	sdCtx.SD.CondStageModel.FreeParamsBuffer()
+	// }
+
+	// Sample
+	C, W, H := 4, width/8, height/8
+
+	// BATCH START
+	// sdCtx.SD.RNG.Seed(seed)
+	xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
+
+	gen.GGML.TensorSetF32Rand(xT, seed)
+
+	// x0 := sdCtx.SD.SampleGo(workCtx, xT, c, cVector, sigmas)
+
+	var x0 = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, c, cVector, len(sigmas), sigmas)
+
+	// BATCH END
+
+	spew.Dump(x0)
 
 	/*
-
-
-		if sdCtx.SD.FreeParamsImmediately {
-			sdCtx.SD.CondStageModel.FreeParamsBuffer()
-		}
-
-		// Sample
-		C, W, H := 4, width/8, height/8
-
-		// BATCH START
-		sdCtx.SD.RNG.Seed(seed)
-		xT := GGMLNewTensor4D(workCtx, GGMLTypeF32, W, H, C, 1)
-		GGMLTensorSetF32Randn(xT, sdCtx.SD.RNG)
-
-		x0 := sdCtx.SD.SampleGo(workCtx, xT, c, cVector, sigmas)
-
-		// BATCH END
 
 		if sdCtx.SD.FreeParamsImmediately {
 			sdCtx.SD.DiffusionModel.FreeParamsBuffer()
@@ -136,10 +141,6 @@ type GGMLInitParams struct {
 	MemSize   int64
 	MemBuffer []byte
 	NoAlloc   bool
-}
-
-func (s *CondStageModel) FreeParamsBuffer() {
-	// Implement FreeParamsBuffer method
 }
 
 func (s *DiffusionModel) FreeParamsBuffer() {

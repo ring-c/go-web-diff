@@ -47,20 +47,20 @@ func (s *SigmaSchedule) TToSigma(t float32) float32 {
 type KarrasSchedule struct {
 }
 
-func (ks *KarrasSchedule) GetSigmas(n uint32) (result []float64) {
+func (ks *KarrasSchedule) GetSigmas(n int) (result []float32) {
 	// These *COULD* be function arguments here,
 	// but does anybody ever bother to touch them?
 	sigmaMin := 0.1
 	sigmaMax := 10.0
 	rho := 7.0
 
-	result = make([]float64, n+1)
+	result = make([]float32, n+1)
 
 	minInvRho := math.Pow(sigmaMin, 1.0/rho)
 	maxInvRho := math.Pow(sigmaMax, 1.0/rho)
-	for i := uint32(0); i < n; i++ {
+	for i := 0; i < n; i++ {
 		// Eq. (5) from Karras et al 2022
-		result[i] = math.Pow(maxInvRho+(float64(i)/float64(n-1))*(minInvRho-maxInvRho), rho)
+		result[i] = float32(math.Pow(maxInvRho+(float64(i)/float64(n-1))*(minInvRho-maxInvRho), rho))
 	}
 	result[n] = 0.0
 
