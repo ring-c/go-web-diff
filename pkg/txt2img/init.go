@@ -43,7 +43,8 @@ func New(in *opts.Options) (*Generator, error) {
 		Model: model,
 	}
 
-	purego.RegisterLibFunc(&impl.GGML.InitGo, libSd, "ggml_init_go")
+	purego.RegisterLibFunc(&impl.GGML.Init, libSd, "go_ggml_init")
+	purego.RegisterLibFunc(&impl.GGML.Free, libSd, "ggml_free")
 	// purego.RegisterLibFunc(&impl.GGML.TensorOverhead, libSd, "ggml_tensor_overhead")
 	purego.RegisterLibFunc(&impl.GGML.NewTensor4D, libSd, "ggml_new_tensor_4d")
 	purego.RegisterLibFunc(&impl.GGML.TensorSetF32, libSd, "go_ggml_tensor_set_f32")

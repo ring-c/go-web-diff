@@ -3,7 +3,6 @@ package generate
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sync"
 
@@ -15,9 +14,8 @@ import (
 )
 
 var (
-	model     *sd.Model
 	generator *txt2img.Generator
-	lastModel = ""
+	lastModel string
 )
 
 type generateResp struct {
@@ -33,7 +31,9 @@ func Generate(c echo.Context) (err error) {
 		}
 	}()
 
-	var resp = generateResp{}
+	var resp = generateResp{
+		Filenames: make([]string, 0),
+	}
 
 	in, err := getInput(c)
 	if err != nil {
@@ -43,7 +43,7 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.ModelPath != lastModel {
-		println("generator init")
+		println("Generator init")
 		generator, err = txt2img.New(in)
 		if err != nil {
 			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
@@ -61,9 +61,16 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	if in.Debug {
-		fmt.Printf("\nDONE\n\n")
-	}
+	/*
+		if in.WithUpscale {
+			err = Upscale(model, in, filenames)
+			if err != nil {
+				return
+			}
+		}
+	*/
+
+	println("Done")
 
 	_ = c.JSON(http.StatusOK, resp)
 	return
@@ -71,37 +78,6 @@ func Generate(c echo.Context) (err error) {
 
 func ModelClose() {
 	generator.Model.Close()
-}
-
-func Run(in *opts.Options) (filenames []string, err error) {
-	_ = os.Mkdir(in.OutputDir, os.ModePerm)
-	if model == nil {
-		model, err = sd.NewModel(in)
-		if err != nil {
-			return
-		}
-	}
-
-	// println(model.GetSystemInfo())
-
-	err = model.LoadFromFile(in.ModelPath)
-	if err != nil {
-		return
-	}
-
-	filenames, err = model.Predict(in)
-	if err != nil {
-		return
-	}
-
-	if in.WithUpscale {
-		err = Upscale(model, in, filenames)
-		if err != nil {
-			return
-		}
-	}
-
-	return
 }
 
 func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {

@@ -5,7 +5,8 @@ import (
 )
 
 type Struct struct {
-	InitGo         func(memSize uint64) unsafe.Pointer
+	Init           func(memSize uint64) (ctx unsafe.Pointer)
+	Free           func(ctx unsafe.Pointer)
 	TensorOverhead func() uint64
 
 	NewTensor4D      func(upscaleCTX unsafe.Pointer, ggmlType, imgWidth, imgHeight, dim, size int) unsafe.Pointer

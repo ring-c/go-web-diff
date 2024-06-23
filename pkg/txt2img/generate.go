@@ -17,20 +17,34 @@ import (
 )
 
 func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error) {
+	filenames = make([]string, 0)
+	if gen.Model.GetCTX() == nil {
+		err = errors.New("model not loaded")
+		return
+	}
+
+	if in == nil {
+		err = errors.New("options is nil")
+		return
+	}
+
+	if in.Width%8 != 0 || in.Height%8 != 0 {
+		err = errors.New("width and height must be multiples of 8")
+		return
+	}
+
+	var seed = in.Seed
+	if seed == 0 {
+		seed = rand.Uint64()
+	}
+
 	// negativePrompt := ""
 	// clipSkip := 2
 	// cfgScale := 1.0
 	var sampleStepsInput = 16
-	seed := uint64(rand.Int63())
 
 	var memSize uint64 = 10 * 1024 * 1024
 	memSize += uint64(in.Width * in.Height * 3 * 4)
-
-	var workCtx = gen.GGML.InitGo(memSize)
-	if workCtx == nil {
-		err = errors.New("gen.GGML.InitGo() failed")
-		return
-	}
 
 	var schedule = KarrasSchedule{}
 
@@ -57,36 +71,51 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	// Sample
 	C, W, H := 4, in.Width/8, in.Height/8
 
-	// BATCH START
-	xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
-	gen.GGML.TensorSetF32Rand(xT, seed)
+	var timeSave = time.Now().Unix()
+	for i := 0; i < in.BatchCount; i++ {
+		if in.Debug {
+			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, in.BatchCount, seed)
+		}
 
-	var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
+		var workCtx = gen.GGML.Init(memSize)
+		if workCtx == nil {
+			err = errors.New("gen.GGML.InitGo() failed")
+			return
+		}
 
-	// BATCH END
+		// BATCH START
+		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
 
-	var imgData = unsafe.Slice((*byte)(cImageData), 3*in.Width*in.Height)
-	var data = bytesToImage(imgData, in.Width, in.Height)
+		gen.GGML.TensorSetF32Rand(xT, seed)
 
-	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
-	var file *os.File
-	file, err = os.Create(path.Join("./output/", filename))
-	if err != nil {
-		return
+		var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
+
+		gen.GGML.Free(workCtx)
+
+		// BATCH END
+		var imgData = unsafe.Slice((*byte)(cImageData), 3*in.Width*in.Height)
+		var data = bytesToImage(imgData, in.Width, in.Height)
+
+		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
+		var file *os.File
+		file, err = os.Create(path.Join("./output/", filename))
+		if err != nil {
+			return
+		}
+
+		err = imageToWriter(data, file)
+		if err != nil {
+			return
+		}
+
+		err = file.Close()
+		if err != nil {
+			return
+		}
+
+		filenames = append(filenames, filename)
+		seed++
 	}
-
-	err = imageToWriter(data, file)
-	if err != nil {
-		return
-	}
-
-	err = file.Close()
-	if err != nil {
-		return
-	}
-
-	filenames = make([]string, 0)
-	filenames = append(filenames, filename)
 
 	return
 }
