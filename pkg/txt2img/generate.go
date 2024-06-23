@@ -15,7 +15,10 @@ import (
 )
 
 func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error) {
-	filenames = make([]string, 0)
+	var timeTotalStart = time.Now()
+
+	gen.filenames = make([]string, 0)
+
 	if gen.Model.GetCTX() == nil {
 		err = errors.New("model not loaded")
 		return
@@ -59,7 +62,6 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	var W = in.Width / 8
 	var H = in.Height / 8
 
-	var timeSave = time.Now().Unix()
 	for i := 0; i < in.BatchCount; i++ {
 		if in.Debug {
 			fmt.Printf("[%d/%d] Generating with seed %d\n", i+1, in.BatchCount, seed)
@@ -90,36 +92,26 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 			fmt.Printf("[%d/%d] Prep done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
 		}
 
-		var cImageDataPointer = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
-		var decoded = gen.computeFirstStage(workCtx, cImageDataPointer, in)
+		var dataC = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
+
+		var decoded = gen.computeFirstStage(workCtx, dataC, in)
+		var data = gen.sdTensorToImage(decoded, in)
+		go gen.GGML.Free(workCtx)
+
+		gen.fileWrite.Add(1)
+		go gen.writeFile(data, in, seed)
 
 		if in.Debug {
 			fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
 		}
 
-		var data = gen.sdTensorToImage(decoded, in)
-
-		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
-		var file *os.File
-		file, err = os.Create(path.Join("./output/", filename))
-		if err != nil {
-			return
-		}
-
-		err = imageToWriter(data, file)
-		if err != nil {
-			return
-		}
-
-		err = file.Close()
-		if err != nil {
-			return
-		}
-
-		gen.GGML.Free(workCtx)
-
-		filenames = append(filenames, filename)
 		seed++
+	}
+
+	gen.fileWrite.Wait()
+
+	if in.Debug {
+		fmt.Printf("Total Done in %gs\n", time.Now().Sub(timeTotalStart).Seconds())
 	}
 
 	return
@@ -136,4 +128,32 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	}
 
 	return
+}
+
+func (gen *Generator) writeFile(img *image.RGBA, in *opts.Options, seed uint64) {
+	defer func() {
+		gen.fileWrite.Done()
+	}()
+
+	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
+	var file *os.File
+	file, err := os.Create(path.Join("./output/", filename))
+	if err != nil {
+		println("writeFile:" + err.Error())
+		return
+	}
+
+	err = imageToWriter(img, file)
+	if err != nil {
+		println("writeFile:" + err.Error())
+		return
+	}
+
+	err = file.Close()
+	if err != nil {
+		println("writeFile:" + err.Error())
+		return
+	}
+
+	gen.filenames = append(gen.filenames, filename)
 }
