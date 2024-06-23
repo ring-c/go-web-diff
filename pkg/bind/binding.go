@@ -88,8 +88,6 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 
 	purego.RegisterLibFunc(&impl.txt2img, libSd, "txt2img")
 
-	purego.RegisterLibFunc(&impl.genGO, libSd, "gen_go")
-
 	purego.RegisterLibFunc(&impl.sdGetSystemInfo, libSd, "sd_get_system_info")
 	purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
 
