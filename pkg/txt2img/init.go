@@ -17,9 +17,9 @@ type Generator struct {
 	GGML  ggml.Struct
 	Model *sd.Model
 
-	// GetLearnedCondition func(sdCTX, ggmlCTX unsafe.Pointer, prompt string, width, height, clipSkip int) unsafe.Pointer // pair
-	// PairGet  func(pair unsafe.Pointer, first bool) unsafe.Pointer                                                // ggml_tensor
-	GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
+	GetLearnedCondition func(sdCTX, ggmlCTX unsafe.Pointer, prompt string, width, height, clipSkip int) unsafe.Pointer         // pair
+	PairGet             func(pair unsafe.Pointer, first bool) unsafe.Pointer                                                   // ggml_tensor
+	GoSample            func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
 
 	DecodeFirstStage func(sdCTX, ggmlCTX, inputTX, outputTX unsafe.Pointer)
 }
@@ -58,8 +58,8 @@ func New(in *opts.Options) (*Generator, error) {
 
 	purego.RegisterLibFunc(&impl.GGML.TensorGetF32, libSd, "go_ggml_tensor_get_f32")
 
-	// purego.RegisterLibFunc(&impl.GetLearnedCondition, libSd, "go_get_learned_condition")
-	// purego.RegisterLibFunc(&impl.PairGet, libSd, "go_pair_get")
+	purego.RegisterLibFunc(&impl.GetLearnedCondition, libSd, "go_get_learned_condition")
+	purego.RegisterLibFunc(&impl.PairGet, libSd, "go_pair_get")
 	purego.RegisterLibFunc(&impl.GoSample, libSd, "go_sample")
 	purego.RegisterLibFunc(&impl.DecodeFirstStage, libSd, "go_decode_first_stage")
 
