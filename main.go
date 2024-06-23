@@ -46,5 +46,5 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	// generate.ModelClose()
+	generate.ModelClose()
 }

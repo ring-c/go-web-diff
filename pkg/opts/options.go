@@ -31,7 +31,7 @@ type Options struct {
 	Height           int              `json:"height,string"`
 	SampleMethod     SampleMethod     `json:"sample_method,string"`
 	SampleSteps      int              `json:"sample_steps,string"`
-	Seed             int64            `json:"seed,string"`
+	Seed             uint64           `json:"seed,string"`
 	BatchCount       int              `json:"batch_count,string"`
 	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 }
