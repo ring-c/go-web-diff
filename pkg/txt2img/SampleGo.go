@@ -7,6 +7,41 @@ import (
 	"math/rand"
 )
 
+type Schedule struct {
+	Sigmas []float32
+}
+
+type DiffusionModel struct {
+	schedule     *Schedule
+	ParamsBuffer []float32
+	uNet         struct {
+		admInChannels int
+	}
+}
+
+const (
+	UNK_TOKEN_ID int = 49407
+	BOS_TOKEN_ID int = 49406
+	EOS_TOKEN_ID int = 49407
+	PAD_TOKEN_ID int = 49407
+)
+
+func (s *DiffusionModel) FreeParamsBuffer() {
+	// Implement FreeParamsBuffer method
+}
+
+func (s *FirstStageModel) FreeParamsBuffer() {
+	// Implement FreeParamsBuffer method
+}
+
+type GGMLContext struct {
+}
+
+type GGMLTensor struct {
+	data []float32
+	ne   [4]int
+}
+
 func (s *Schedule) sigmaToT(sigma float32) float32 {
 	// Implement the sigma to t conversion logic
 	return 0.0

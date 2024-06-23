@@ -12,60 +12,19 @@ import (
 	"path"
 	"time"
 	"unsafe"
+
+	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-type SDContext struct {
-	SD *SDModel
-}
-
-type SDModel struct {
-	Denoiser              *Denoiser
-	DiffusionModel        *DiffusionModel
-	FirstStageModel       *FirstStageModel
-	RNG                   *rand.Rand
-	FreeParamsImmediately bool
-	UseTinyAutoencoder    bool
-}
-
-type Denoiser struct {
-	Schedule *Schedule
-}
-
-type Schedule struct {
-	Sigmas []float32
-}
-
-type DiffusionModel struct {
-	schedule     *Schedule
-	ParamsBuffer []float32
-	uNet         struct {
-		admInChannels int
-	}
-}
-
-type FirstStageModel struct {
-	ParamsBuffer []float32
-}
-
-const (
-	UNK_TOKEN_ID int = 49407
-	BOS_TOKEN_ID int = 49406
-	EOS_TOKEN_ID int = 49407
-	PAD_TOKEN_ID int = 49407
-)
-
-// var encoder = make(map[string]int)
-
-func (gen *Generator) Generate(prompt string, width, height int) (err error) {
-
+func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error) {
 	// negativePrompt := ""
 	// clipSkip := 2
 	// cfgScale := 1.0
 	var sampleStepsInput = 16
-	seed := uint64(42)
+	seed := uint64(rand.Int63())
 
 	var memSize uint64 = 10 * 1024 * 1024
-	memSize += uint64(width * height * 3 * 4)
+	memSize += uint64(in.Width * in.Height * 3 * 4)
 
 	var workCtx = gen.GGML.InitGo(memSize)
 	if workCtx == nil {
@@ -96,26 +55,22 @@ func (gen *Generator) Generate(prompt string, width, height int) (err error) {
 	// }
 
 	// Sample
-	C, W, H := 4, width/8, height/8
+	C, W, H := 4, in.Width/8, in.Height/8
 
 	// BATCH START
-	// sdCtx.SD.RNG.Seed(seed)
 	xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
-
 	gen.GGML.TensorSetF32Rand(xT, seed)
-
-	// x0 := sdCtx.SD.SampleGo(workCtx, xT, c, cVector, sigmas)
 
 	var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, len(sigmas), sigmas)
 
 	// BATCH END
 
-	var imgData = unsafe.Slice((*byte)(cImageData), 3*width*height)
-	var data = bytesToImage(imgData, width, height)
+	var imgData = unsafe.Slice((*byte)(cImageData), 3*in.Width*in.Height)
+	var data = bytesToImage(imgData, in.Width, in.Height)
 
 	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
 	var file *os.File
-	file, err = os.Create(path.Join(".", filename))
+	file, err = os.Create(path.Join("./output/", filename))
 	if err != nil {
 		return
 	}
@@ -130,43 +85,10 @@ func (gen *Generator) Generate(prompt string, width, height int) (err error) {
 		return
 	}
 
+	filenames = make([]string, 0)
+	filenames = append(filenames, filename)
+
 	return
-}
-
-type SDImage struct {
-	Width   int
-	Height  int
-	Channel int
-	Data    []byte
-}
-
-type GGMLInitParams struct {
-	MemSize   int64
-	MemBuffer []byte
-	NoAlloc   bool
-}
-
-func (s *DiffusionModel) FreeParamsBuffer() {
-	// Implement FreeParamsBuffer method
-}
-
-func (s *FirstStageModel) FreeParamsBuffer() {
-	// Implement FreeParamsBuffer method
-}
-
-type GGMLContext struct {
-}
-
-type GGMLTensor struct {
-	data []float32
-	ne   [4]int
-}
-
-type GGMLType int
-
-type ConditionPair struct {
-	First  *GGMLTensor
-	Second *GGMLTensor
 }
 
 func bytesToImage(byteData []byte, width, height int) (img *image.RGBA) {

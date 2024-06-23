@@ -11,9 +11,14 @@ import (
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
+	"github.com/ring-c/go-web-diff/pkg/txt2img"
 )
 
-var model *sd.Model
+var (
+	model     *sd.Model
+	generator *txt2img.Generator
+	lastModel = ""
+)
 
 type generateResp struct {
 	Filenames []string `json:"filenames,omitempty"`
@@ -37,7 +42,19 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	resp.Filenames, err = Run(in)
+	if in.ModelPath != lastModel {
+		println("generator init")
+		generator, err = txt2img.New(in)
+		if err != nil {
+			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
+			return
+		}
+		lastModel = in.ModelPath
+	}
+
+	println("Generate")
+
+	resp.Filenames, err = generator.Generate(in)
 	if err != nil {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)
@@ -53,7 +70,7 @@ func Generate(c echo.Context) (err error) {
 }
 
 func ModelClose() {
-	model.Close()
+	generator.Model.Close()
 }
 
 func Run(in *opts.Options) (filenames []string, err error) {
@@ -64,8 +81,6 @@ func Run(in *opts.Options) (filenames []string, err error) {
 			return
 		}
 	}
-
-	// defer model.Close()
 
 	// println(model.GetSystemInfo())
 
@@ -78,7 +93,6 @@ func Run(in *opts.Options) (filenames []string, err error) {
 	if err != nil {
 		return
 	}
-	// model.Close()
 
 	if in.WithUpscale {
 		err = Upscale(model, in, filenames)

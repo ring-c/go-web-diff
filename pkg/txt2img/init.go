@@ -6,8 +6,8 @@ import (
 	"github.com/ebitengine/purego"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
-	"github.com/ring-c/go-web-diff/pkg/generate"
 	"github.com/ring-c/go-web-diff/pkg/ggml"
+	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 
 	_ "github.com/ianlancetaylor/cgosymbolizer"
@@ -22,16 +22,11 @@ type Generator struct {
 	GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
 }
 
-func New() (*Generator, error) {
+func New(in *opts.Options) (*Generator, error) {
 	libSd, _, err := bind.OpenLibrary()
 	if err != nil {
 		return nil, err
 	}
-
-	var in = generate.DefaultInput
-	in.ModelPath = "/media/ed/files/sd/diff/models/Stable-diffusion/ponyDiffusionV6XL_v6TurboDPOMerge.safetensors"
-	in.Debug = true
-	in.GpuEnable = true
 
 	model, err := sd.NewModel(in)
 	if err != nil {
