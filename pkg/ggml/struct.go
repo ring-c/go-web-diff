@@ -9,9 +9,15 @@ type Struct struct {
 	Free           func(ctx unsafe.Pointer)
 	TensorOverhead func() uint64
 
-	NewTensor4D      func(upscaleCTX unsafe.Pointer, ggmlType, imgWidth, imgHeight, dim, size int) unsafe.Pointer
+	NewTensor4D      func(workCtx unsafe.Pointer, ggmlType, imgWidth, imgHeight, dim, size int) unsafe.Pointer
 	TensorSetF32     func(tx unsafe.Pointer, value float64, l, k, j, i int)
 	TensorSetF32Rand func(tx unsafe.Pointer, seed uint64)
+
+	TensorScale       func(tx unsafe.Pointer, scale float32)
+	TensorScaleOutput func(tx unsafe.Pointer)
+	TensorClamp       func(tx unsafe.Pointer, min float32, max float32)
+
+	TensorGetF32 func(tx unsafe.Pointer, l, k, j, i int) float32
 }
 
 type InitParams struct {
