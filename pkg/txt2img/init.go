@@ -19,7 +19,7 @@ type Generator struct {
 
 	// GetLearnedCondition func(sdCTX, ggmlCTX unsafe.Pointer, prompt string, width, height, clipSkip int) unsafe.Pointer // pair
 	// PairGet  func(pair unsafe.Pointer, first bool) unsafe.Pointer                                                // ggml_tensor
-	GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
+	GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
 }
 
 func New(in *opts.Options) (*Generator, error) {

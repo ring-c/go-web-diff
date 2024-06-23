@@ -61,7 +61,7 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
 	gen.GGML.TensorSetF32Rand(xT, seed)
 
-	var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, len(sigmas), sigmas)
+	var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
 
 	// BATCH END
 
