@@ -4,14 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
 	"image/png"
 	"io"
 	"math/rand"
 	"os"
 	"path"
 	"time"
-	"unsafe"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
@@ -36,19 +34,21 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	var seed = in.Seed
 	if seed == 0 {
 		seed = rand.Uint64()
+		if in.Debug {
+			fmt.Printf("Generating random starting seed: %d\n", seed)
+		}
 	}
 
 	// negativePrompt := ""
 	// clipSkip := 2
 	// cfgScale := 1.0
-	var sampleStepsInput = 16
 
 	var memSize uint64 = 10 * 1024 * 1024
 	memSize += uint64(in.Width * in.Height * 3 * 4)
 
 	var schedule = KarrasSchedule{}
 
-	var sigmas = schedule.GetSigmas(sampleStepsInput)
+	var sigmas = schedule.GetSigmas(in.SampleSteps)
 	// spew.Dump(sigmas)
 
 	// Get learned condition
@@ -69,32 +69,39 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	// }
 
 	// Sample
-	C, W, H := 4, in.Width/8, in.Height/8
+	var W = in.Width / 8
+	var H = in.Height / 8
 
 	var timeSave = time.Now().Unix()
 	for i := 0; i < in.BatchCount; i++ {
 		if in.Debug {
-			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, in.BatchCount, seed)
+			fmt.Printf("[%d/%d] Generating with seed %d\n", i+1, in.BatchCount, seed)
 		}
+
+		var timeStart = time.Now()
 
 		var workCtx = gen.GGML.Init(memSize)
 		if workCtx == nil {
-			err = errors.New("gen.GGML.InitGo() failed")
+			err = errors.New("gen.GGML.Init() failed")
 			return
 		}
 
-		// BATCH START
-		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, C, 1)
+		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, 4, 1)
 
 		gen.GGML.TensorSetF32Rand(xT, seed)
 
-		var cImageData = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
+		if in.Debug {
+			fmt.Printf("[%d/%d] Prep done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
+		}
 
-		gen.GGML.Free(workCtx)
+		var cImageDataPointer = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
+		var decoded = gen.computeFirstStage(workCtx, cImageDataPointer, in)
 
-		// BATCH END
-		var imgData = unsafe.Slice((*byte)(cImageData), 3*in.Width*in.Height)
-		var data = bytesToImage(imgData, in.Width, in.Height)
+		if in.Debug {
+			fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
+		}
+
+		var data = gen.sdTensorToImage(decoded, in)
 
 		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
 		var file *os.File
@@ -113,26 +120,10 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 			return
 		}
 
+		gen.GGML.Free(workCtx)
+
 		filenames = append(filenames, filename)
 		seed++
-	}
-
-	return
-}
-
-func bytesToImage(byteData []byte, width, height int) (img *image.RGBA) {
-	img = image.NewRGBA(image.Rect(0, 0, width, height))
-
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			idx := (y*width + x) * 3
-			img.Set(x, y, color.RGBA{
-				R: byteData[idx],
-				G: byteData[idx+1],
-				B: byteData[idx+2],
-				A: 255,
-			})
-		}
 	}
 
 	return
