@@ -1,6 +1,7 @@
 package txt2img
 
 import (
+	"sync"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -16,6 +17,9 @@ import (
 type Generator struct {
 	GGML  ggml.Struct
 	Model *sd.Model
+
+	fileWrite sync.WaitGroup
+	filenames []string
 
 	GetLearnedCondition func(sdCTX, ggmlCTX unsafe.Pointer, prompt string, width, height, clipSkip int) unsafe.Pointer         // pair
 	PairGet             func(pair unsafe.Pointer, first bool) unsafe.Pointer                                                   // ggml_tensor
