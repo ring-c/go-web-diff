@@ -51,19 +51,6 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 	var sigmas = schedule.GetSigmas(in.SampleSteps)
 	// spew.Dump(sigmas)
 
-	// Get learned condition
-	// c, cVector := getLearnedCondition(workCtx, prompt, clipSkip, width, height, false)
-
-	// var pairCond = gen.GetLearnedCondition(gen.Model.GetCTX(), workCtx, prompt, width, height, clipSkip)
-
-	// spew.Dump(pairCond)
-
-	// var c = gen.PairGet(pair, true)
-	// var cVector = gen.PairGet(pair, false)
-
-	// spew.Dump(c)
-	// spew.Dump(cVector)
-
 	// if sdCtx.SD.FreeParamsImmediately {
 	// 	sdCtx.SD.CondStageModel.FreeParamsBuffer()
 	// }
@@ -87,8 +74,17 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 		}
 
 		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, 4, 1)
-
 		gen.GGML.TensorSetF32Rand(xT, seed)
+
+		/*
+			var pairCond = gen.GetLearnedCondition(gen.Model.GetCTX(), workCtx, in.Prompt, in.Width, in.Height, in.ClipSkip)
+
+			var c = gen.PairGet(pairCond, true)
+			var cVector = gen.PairGet(pairCond, false)
+
+			spew.Dump(c)
+			spew.Dump(cVector)
+		*/
 
 		if in.Debug {
 			fmt.Printf("[%d/%d] Prep done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
