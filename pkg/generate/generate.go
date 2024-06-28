@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ import (
 var (
 	generator *txt2img.Generator
 	lastModel string
+	lastLora  string
 )
 
 type generateResp struct {
@@ -42,14 +44,32 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	if in.ModelPath != lastModel {
+	if in.ModelPath != lastModel || in.Loras != lastLora {
 		generator, err = txt2img.New(in)
 		if err != nil {
 			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
 			return
 		}
 		lastModel = in.ModelPath
-		generator.ApplyLoras(generator.Model.GetCTX())
+	}
+
+	if in.Loras != lastLora {
+		var loraData = strings.Split(in.Loras, "\n")
+
+		var loraApply = make([]string, 0, len(loraData))
+		for _, lora := range loraData {
+			if lora == "" {
+				continue
+			}
+
+			loraApply = append(
+				loraApply,
+				fmt.Sprintf("<lora:%s>", lora),
+			)
+		}
+
+		generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
+		lastLora = in.Loras
 	}
 
 	resp.Filenames, err = generator.Generate(in)

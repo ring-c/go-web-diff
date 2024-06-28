@@ -9,21 +9,16 @@ import (
 )
 
 var DefaultInput = &opts.Options{
-	Threads:               -1,
-	VaeDecodeOnly:         false,
-	VaeTiling:             true,
-	FreeParamsImmediately: false,
-	RngType:               opts.STD_DEFAULT_RNG,
-	WType:                 opts.F16,
-	Schedule:              opts.KARRAS,
-	GpuEnable:             true,
-	Debug:                 true,
+	Threads:   -1,
+	VaeTiling: true,
+	RngType:   opts.STD_DEFAULT_RNG,
+	WType:     opts.F16,
+	Schedule:  opts.KARRAS,
+	GpuEnable: true,
+	Debug:     true,
 
-	WithUpscale:      false,
-	DeleteUpscaled:   false,
-	OutputDir:        "./output/",
-	Prompt:           "",
-	NegativePrompt:   "",
+	OutputDir: "./output/",
+
 	CfgScale:         7.0,
 	ClipSkip:         2,
 	Width:            512,
