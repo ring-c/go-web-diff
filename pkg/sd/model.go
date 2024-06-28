@@ -26,20 +26,20 @@ type Model struct {
 	upscalerCtx *bind.CUpScalerCtx
 }
 
-func NewModel(options *opts.Options) (model *Model, err error) {
+func NewModel(in *opts.Options) (model *Model, err error) {
 	csd, err := bind.NewCStableDiffusion()
 	if err != nil {
 		return
 	}
 
-	if options.Debug {
+	if in.Debug {
 		csd.SetLogCallBack(func(level opts.LogLevel, text string) {
 			print(text)
 		})
 	}
 
 	model = &Model{
-		options: options,
+		options: in,
 		cSD:     csd,
 	}
 

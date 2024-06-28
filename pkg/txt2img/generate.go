@@ -114,6 +114,8 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 		fmt.Printf("Total Done in %gs\n", time.Now().Sub(timeTotalStart).Seconds())
 	}
 
+	filenames = gen.filenames
+
 	return
 }
 

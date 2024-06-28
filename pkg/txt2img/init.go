@@ -26,6 +26,8 @@ type Generator struct {
 	GoSample            func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
 
 	DecodeFirstStage func(sdCTX, ggmlCTX, inputTX, outputTX unsafe.Pointer)
+
+	ApplyLoras func(sdCTX unsafe.Pointer)
 }
 
 func New(in *opts.Options) (*Generator, error) {
@@ -66,6 +68,8 @@ func New(in *opts.Options) (*Generator, error) {
 	purego.RegisterLibFunc(&impl.PairGet, libSd, "go_pair_get")
 	purego.RegisterLibFunc(&impl.GoSample, libSd, "go_sample")
 	purego.RegisterLibFunc(&impl.DecodeFirstStage, libSd, "go_decode_first_stage")
+
+	purego.RegisterLibFunc(&impl.ApplyLoras, libSd, "apply_loras")
 
 	return &impl, err
 }

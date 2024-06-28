@@ -60,7 +60,7 @@ type CStableDiffusionImpl struct {
 	) unsafe.Pointer
 
 	sdGetSystemInfo  func() unsafe.Pointer
-	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer, data unsafe.Pointer)
+	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer))
 
 	// img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
 
@@ -141,10 +141,9 @@ func (c *CStableDiffusionImpl) PredictImageGO(ctx *CStableDiffusionCtx, prompt s
 }
 
 func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {
-	c.sdSetLogCallback(func(level int, text unsafe.Pointer, data unsafe.Pointer) unsafe.Pointer {
+	c.sdSetLogCallback(func(level int, text unsafe.Pointer, data unsafe.Pointer) {
 		cb(opts.LogLevel(level), goString(text))
-		return nil
-	}, nil)
+	})
 }
 
 func (c *CStableDiffusionImpl) Close() {
