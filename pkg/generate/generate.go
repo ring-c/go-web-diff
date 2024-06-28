@@ -43,16 +43,14 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.ModelPath != lastModel {
-		println("Generator init")
 		generator, err = txt2img.New(in)
 		if err != nil {
 			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
 			return
 		}
 		lastModel = in.ModelPath
+		generator.ApplyLoras(generator.Model.GetCTX())
 	}
-
-	println("Generate")
 
 	resp.Filenames, err = generator.Generate(in)
 	if err != nil {
@@ -69,8 +67,6 @@ func Generate(c echo.Context) (err error) {
 			}
 		}
 	*/
-
-	println("Done")
 
 	_ = c.JSON(http.StatusOK, resp)
 	return
