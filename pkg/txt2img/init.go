@@ -27,7 +27,7 @@ type Generator struct {
 
 	DecodeFirstStage func(sdCTX, ggmlCTX, inputTX, outputTX unsafe.Pointer)
 
-	ApplyLoras func(sdCTX unsafe.Pointer)
+	ApplyLora func(sdCTX unsafe.Pointer, lora string)
 }
 
 func New(in *opts.Options) (*Generator, error) {
@@ -69,7 +69,7 @@ func New(in *opts.Options) (*Generator, error) {
 	purego.RegisterLibFunc(&impl.GoSample, libSd, "go_sample")
 	purego.RegisterLibFunc(&impl.DecodeFirstStage, libSd, "go_decode_first_stage")
 
-	purego.RegisterLibFunc(&impl.ApplyLoras, libSd, "apply_loras")
+	purego.RegisterLibFunc(&impl.ApplyLora, libSd, "apply_lora")
 
 	return &impl, err
 }

@@ -28,8 +28,8 @@
                     <span id="status"></span>&nbsp;<button type="submit">Send</button>
                 </div>
 
-
                 <hr/>
+
                 <label>
                     Negative prompt:<br/>
                     <textarea name="negative_prompt" cols="30" rows="6"></textarea>
@@ -38,11 +38,6 @@
                 <label>
                     Model path:
                     <input type="text" name="model_path" value=""/>
-                </label><br/>
-
-                <label>
-                    Lora dir:
-                    <input type="text" name="lora_model_dir" value=""/>
                 </label><br/>
 
                 <label>
@@ -89,6 +84,17 @@
                 <label>
                     Full width preview:
                     <input type="checkbox" name="full_width_preview" checked/>
+                </label>
+
+                <hr/>
+
+                <label>
+                    LORAs dir:
+                    <input type="text" name="lora_model_dir" value=""/>
+                </label><br/>
+
+                <label>
+                    <textarea name="loras" cols="30" rows="4"></textarea>
                 </label><br/>
             </form>
         </td>
