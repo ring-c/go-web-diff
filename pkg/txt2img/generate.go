@@ -108,14 +108,13 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 		seed++
 	}
 
-	gen.fileWrite.Wait()
-
 	if in.Debug {
 		fmt.Printf("Total Done in %gs\n", time.Now().Sub(timeTotalStart).Seconds())
 	}
 
-	filenames = gen.filenames
+	gen.fileWrite.Wait()
 
+	filenames = gen.filenames
 	return
 }
 
@@ -139,7 +138,7 @@ func (gen *Generator) writeFile(img *image.RGBA, in *opts.Options, seed uint64) 
 
 	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
 	var file *os.File
-	file, err := os.Create(path.Join("./output/", filename))
+	file, err := os.Create(path.Join(in.OutputDir, filename))
 	if err != nil {
 		println("writeFile:" + err.Error())
 		return

@@ -41,11 +41,11 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 
 	data.Prompt = parsePrompt(data.Prompt)
 	data.NegativePrompt = parsePrompt(data.NegativePrompt)
+	data.Loras = parsePrompt(data.Loras)
 	return
 }
 
 func parsePrompt(input string) (prompt string) {
-	var LORAs = make([]string, 0)
 	for _, str := range strings.Split(input, "\n") {
 		if len(str) < 1 {
 			continue
@@ -55,14 +55,8 @@ func parsePrompt(input string) (prompt string) {
 			continue
 		}
 
-		if strings.HasPrefix(str, "<lora") {
-			LORAs = append(LORAs, str)
-			continue
-		}
-
 		prompt += str + ", "
 	}
 
-	prompt += strings.Join(LORAs, "")
 	return
 }

@@ -105,7 +105,7 @@
         </td>
 
         <td id="preview" style="vertical-align: top;">
-            <br/>
+            &nbsp;
         </td>
     </tr>
 </table>
@@ -162,7 +162,7 @@
             if (xhr.readyState === 4 && xhr.status === 200) {
 
                 // Preview
-                let images = "<br\>";
+                let images = "";
                 if (data.show_preview) {
                     const resp = JSON.parse(xhr.responseText);
                     if (resp['filenames'] === "undefined") {
