@@ -9,7 +9,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 
 	"github.com/ring-c/go-web-diff/pkg/generate"
 )
@@ -17,7 +16,8 @@ import (
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
-			println("Recovered panic: ", r)
+			println("Recovered panic")
+			spew.Dump(r)
 		}
 	}()
 	spew.Config.Indent = "\t"
@@ -25,7 +25,6 @@ func main() {
 	// Setup
 	e := echo.New()
 	e.HideBanner = true
-	e.Logger.SetLevel(log.INFO)
 
 	generate.Routes(e)
 

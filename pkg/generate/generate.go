@@ -45,6 +45,10 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.ModelPath != lastModel || in.Loras != lastLora {
+		if generator != nil {
+			generator.Model.Close()
+		}
+
 		generator, err = txt2img.New(in)
 		if err != nil {
 			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
@@ -54,9 +58,9 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.Loras != lastLora {
-		var loraData = strings.Split(in.Loras, "\n")
+		var loraData = strings.Split(in.Loras, ", ")
 
-		var loraApply = make([]string, 0, len(loraData))
+		var loraApply = make([]string, 0)
 		for _, lora := range loraData {
 			if lora == "" {
 				continue
