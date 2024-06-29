@@ -3,43 +3,7 @@ package bind
 import (
 	"image"
 	"image/color"
-	"unsafe"
 )
-
-func goString(cText unsafe.Pointer) string {
-	if cText == nil {
-		return ""
-	}
-
-	var length int
-	for {
-		if *(*byte)(unsafe.Add(cText, uintptr(length))) == '\x00' {
-			break
-		}
-		length++
-	}
-
-	return unsafe.String((*byte)(cText), length)
-}
-
-func goImageSlice(cImages unsafe.Pointer, size int) (goImages []Image) {
-	goImages = make([]Image, size)
-	if cImages == nil {
-		return
-	}
-	img := (*cImage)(cImages)
-	imgSlice := unsafe.Slice(img, size)
-
-	for i, imageS := range imgSlice {
-		goImages[i] = Image{
-			Channel: imageS.channel,
-			Width:   imageS.width,
-			Height:  imageS.height,
-			Data:    unsafe.Slice((*byte)(imageS.data), imageS.channel*imageS.width*imageS.height),
-		}
-	}
-	return
-}
 
 func bytesToImage(byteData []byte, width, height int) (img *image.RGBA) {
 	img = image.NewRGBA(image.Rect(0, 0, width, height))

@@ -2,14 +2,11 @@ package sd
 
 import (
 	"errors"
-	"fmt"
 	"image"
 	"image/png"
 	"io"
 	"os"
-	"path"
 	"sync"
-	"time"
 	"unsafe"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
@@ -30,12 +27,6 @@ func NewModel(in *opts.Options) (model *Model, err error) {
 	csd, err := bind.NewCStableDiffusion()
 	if err != nil {
 		return
-	}
-
-	if in.Debug {
-		csd.SetLogCallBack(func(level opts.LogLevel, text string) {
-			print(text)
-		})
 	}
 
 	model = &Model{
@@ -89,77 +80,6 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 	if sd.ctx.CTX == nil {
 		err = errors.New("error sd context creation")
 		return
-	}
-
-	return
-}
-
-func (sd *Model) GetSystemInfo() string {
-	return sd.cSD.GetSystemInfo()
-}
-
-func (sd *Model) Predict(options *opts.Options) (filenames []string, err error) {
-	filenames = make([]string, 0)
-	if sd.ctx == nil {
-		err = errors.New("model not loaded")
-		return
-	}
-
-	if options == nil {
-		err = errors.New("options is nil")
-		return
-	}
-
-	if options.Width%8 != 0 || options.Height%8 != 0 {
-		err = errors.New("width and height must be multiples of 8")
-		return
-	}
-
-	var seed int64 = 42
-
-	var timeSave = time.Now().Unix()
-	for i := 0; i < options.BatchCount; i++ {
-		if options.Debug {
-			fmt.Printf("\nGenerating %d/%d with seed %d\n\n", i+1, options.BatchCount, seed)
-		}
-
-		var data = sd.cSD.PredictImage(
-			sd.ctx,
-			options.Prompt,
-			options.NegativePrompt,
-			options.ClipSkip,
-			options.CfgScale,
-			options.Width,
-			options.Height,
-			options.SampleMethod,
-			options.SampleSteps,
-			seed,
-		)
-
-		if data.Bounds().Max.X == 0 || data.Bounds().Max.Y == 0 {
-			println("err generate, size 0x0")
-			continue
-		}
-
-		var filename = fmt.Sprintf("%d-%d.png", timeSave, seed)
-		var file *os.File
-		file, err = os.Create(path.Join(options.OutputDir, filename))
-		if err != nil {
-			return
-		}
-
-		err = imageToWriter(data, file)
-		if err != nil {
-			return
-		}
-
-		err = file.Close()
-		if err != nil {
-			return
-		}
-
-		filenames = append(filenames, filename)
-		seed++
 	}
 
 	return

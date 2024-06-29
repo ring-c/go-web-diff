@@ -33,37 +33,6 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	txt2img func(
-		ctx unsafe.Pointer,
-		prompt string,
-		negativePrompt string,
-		clipSkip int,
-		cfgScale float32,
-		width int,
-		height int,
-		sampleMethod int,
-		sampleSteps int,
-		seed int64,
-		batchCount int,
-		controlCond unsafe.Pointer,
-		controlStrength float32,
-		styleRatio float32,
-		normalizeInput bool,
-		inputIdImagesPath string,
-	) unsafe.Pointer
-
-	genGO func(
-		ctx unsafe.Pointer,
-		prompt string,
-		width int,
-		height int,
-	) unsafe.Pointer
-
-	sdGetSystemInfo  func() unsafe.Pointer
-	sdSetLogCallback func(callback func(level int, text unsafe.Pointer, data unsafe.Pointer))
-
-	// img2img func(ctx unsafe.Pointer, img uintptr, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod int, sampleSteps int, strength float32, seed int64, batchCount int) uintptr
-
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
 
@@ -71,8 +40,6 @@ type CStableDiffusionImpl struct {
 	freeUpscalerCtx func(ctx unsafe.Pointer)
 
 	Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
-
-	Test uintptr
 }
 
 func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
@@ -85,11 +52,6 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 		libSd:       libSd,
 		libFilename: filename,
 	}
-
-	purego.RegisterLibFunc(&impl.txt2img, libSd, "txt2img")
-
-	purego.RegisterLibFunc(&impl.sdGetSystemInfo, libSd, "sd_get_system_info")
-	purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
 
 	// purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
 
@@ -104,48 +66,6 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	return &impl, err
 }
 
-func (c *CStableDiffusionImpl) PredictImage(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result *image.RGBA) {
-	var cImages = c.txt2img(
-		ctx.CTX,
-		prompt,
-		negativePrompt,
-		clipSkip,
-		cfgScale,
-		width,
-		height,
-		int(sampleMethod),
-		sampleSteps,
-		seed,
-		1,
-		nil,
-		0,
-		0,
-		false,
-		"",
-	)
-
-	var img = goImageSlice(cImages, 1)
-	return bytesToImage(img[0].Data, int(img[0].Width), int(img[0].Height))
-}
-
-func (c *CStableDiffusionImpl) PredictImageGO(ctx *CStableDiffusionCtx, prompt string, negativePrompt string, clipSkip int, cfgScale float32, width int, height int, sampleMethod opts.SampleMethod, sampleSteps int, seed int64) (result *image.RGBA) {
-	var cImages = c.genGO(
-		ctx.CTX,
-		prompt,
-		width,
-		height,
-	)
-
-	var img = goImageSlice(cImages, 1)
-	return bytesToImage(img[0].Data, int(img[0].Width), int(img[0].Height))
-}
-
-func (c *CStableDiffusionImpl) SetLogCallBack(cb CLogCallback) {
-	c.sdSetLogCallback(func(level int, text unsafe.Pointer, data unsafe.Pointer) {
-		cb(opts.LogLevel(level), goString(text))
-	})
-}
-
 func (c *CStableDiffusionImpl) Close() {
 	if c.libSd != 0 {
 		_ = CloseLibrary(c.libSd)
@@ -154,10 +74,6 @@ func (c *CStableDiffusionImpl) Close() {
 	if len(c.libFilename) > 0 {
 		_ = os.Remove(c.libFilename)
 	}
-}
-
-func (c *CStableDiffusionImpl) GetSystemInfo() string {
-	return goString(c.sdGetSystemInfo())
 }
 
 func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Image, upscaleFactor uint32) (result *image.RGBA, err error) {
