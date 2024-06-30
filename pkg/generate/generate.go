@@ -58,10 +58,9 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	if in.Loras != lastLora {
-		var loraData = strings.Split(in.Loras, ", ")
-
 		var loraApply = make([]string, 0)
-		for _, lora := range loraData {
+		for _, loraD := range strings.Split(in.Loras, ", ") {
+			var lora = strings.TrimSpace(loraD)
 			if lora == "" {
 				continue
 			}
