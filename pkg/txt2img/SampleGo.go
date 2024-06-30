@@ -19,13 +19,6 @@ type DiffusionModel struct {
 	}
 }
 
-const (
-	UNK_TOKEN_ID int = 49407
-	BOS_TOKEN_ID int = 49406
-	EOS_TOKEN_ID int = 49407
-	PAD_TOKEN_ID int = 49407
-)
-
 func (s *DiffusionModel) FreeParamsBuffer() {
 	// Implement FreeParamsBuffer method
 }

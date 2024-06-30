@@ -18,6 +18,7 @@ type Struct struct {
 	TensorClamp       func(tx unsafe.Pointer, min float32, max float32)
 
 	TensorGetF32 func(tx unsafe.Pointer, l, k, j, i int) float32
+	// VectorToGgmlTensorI32 func(workCtx unsafe.Pointer, vector unsafe.Pointer) unsafe.Pointer
 }
 
 type InitParams struct {

@@ -4,7 +4,6 @@ package txt2img
 
 import (
 	"math"
-	"time"
 	"unsafe"
 )
 
@@ -14,82 +13,19 @@ type ggmlTensor struct {
 }
 
 var (
-	n_threads       = 4
-	diffusion_model = &DiffusionModel{}
+	nThreads = 4
 )
-
-func ggmlTimeMs() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
-}
-
-func vectorToGgmlTensorI32(workCtx unsafe.Pointer, vec []int) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlDupTensor(workCtx unsafe.Pointer, tensor *ggmlTensor) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlTensorMean(tensor *ggmlTensor) float32 {
-	panic("fix me")
-	return 0.0
-}
-
-func ggmlTensorGetF32(tensor *ggmlTensor, i0, i1, i2 int) float32 {
-	panic("fix me")
-	return 0.0
-}
-
-func ggmlTensorSetF32(tensor *ggmlTensor, value float32, i0, i1, i2 int) {
-	panic("fix me")
-}
-
-func ggmlTensorScale(tensor *ggmlTensor, scale float32) {
-	panic("fix me")
-}
-
-func ggmlNelements(tensor *ggmlTensor) int {
-	panic("fix me")
-	return 0
-}
-
-func vectorToGgmlTensor(workCtx unsafe.Pointer, vec []float32) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlReshape2D(workCtx unsafe.Pointer, tensor *ggmlTensor, dim0, dim1 int) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlNewTensor1D(workCtx unsafe.Pointer, tensorType int, size int) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlView2D(workCtx unsafe.Pointer, tensor *ggmlTensor, dim0, dim1, stride, offset int) *ggmlTensor {
-	panic("fix me")
-	return &ggmlTensor{}
-}
-
-func ggmlNbytes(tensor *ggmlTensor) int {
-	panic("fix me")
-	return 0
-}
 
 func setTimestepEmbedding(timesteps []float32, embedView *ggmlTensor, outDim int) {
 	panic("fix me")
 }
 
-func getLearnedCondition(workCtx unsafe.Pointer, text string, clipSkip, width, height int, forceZeroEmbeddings bool) (*ggmlTensor, *ggmlTensor) {
-	tokens, weights := tokenize(text, true)
-	return getLearnedConditionCommon(workCtx, tokens, weights, clipSkip, width, height, forceZeroEmbeddings)
+func (gen *Generator) GetLearnedCondition(workCtx unsafe.Pointer, prompt string, clipSkip, width, height int, forceZeroEmbeddings bool) (unsafe.Pointer, unsafe.Pointer) {
+	tokens, weights := gen.Tokenize(prompt, true)
+	return gen.getLearnedConditionCommon(workCtx, tokens, weights, clipSkip, width, height, forceZeroEmbeddings)
 }
 
-func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []float32, clipSkip, width, height int, forceZeroEmbeddings bool) (*ggmlTensor, *ggmlTensor) {
+func (gen *Generator) getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []float32, clipSkip, width, height int, forceZeroEmbeddings bool) (unsafe.Pointer, unsafe.Pointer) {
 	cond_stage_model.setClipSkip(clipSkip)
 	var hiddenStates, chunkHiddenStates, pooled *ggmlTensor
 	var hiddenStatesVec []float32
@@ -100,7 +36,7 @@ func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []f
 		chunkTokens := tokens[chunkIdx*chunkLen : (chunkIdx+1)*chunkLen]
 		chunkWeights := weights[chunkIdx*chunkLen : (chunkIdx+1)*chunkLen]
 
-		inputIds := vectorToGgmlTensorI32(workCtx, chunkTokens)
+		inputIds := gen.GGML.VectorToGgmlTensorI32(workCtx, chunkTokens)
 		var inputIds2 *ggmlTensor
 		var maxTokenIdx int
 		// if version == VERSION_XL {
@@ -119,9 +55,9 @@ func getLearnedConditionCommon(workCtx unsafe.Pointer, tokens []int, weights []f
 		inputIds2 = vectorToGgmlTensorI32(workCtx, chunkTokens)
 		// }
 
-		cond_stage_model.compute(n_threads, inputIds, inputIds2, maxTokenIdx, false, &chunkHiddenStates, workCtx)
+		cond_stage_model.compute(nThreads, inputIds, inputIds2, maxTokenIdx, false, &chunkHiddenStates, workCtx)
 		if chunkIdx == 0 {
-			cond_stage_model.compute(n_threads, inputIds, inputIds2, maxTokenIdx, true, &pooled, workCtx)
+			cond_stage_model.compute(nThreads, inputIds, inputIds2, maxTokenIdx, true, &pooled, workCtx)
 		}
 
 		result := ggmlDupTensor(workCtx, chunkHiddenStates)
