@@ -10,7 +10,14 @@ import (
 	"strings"
 )
 
-func tokenize(text string, padding bool) (tokens []int, weights []float32) {
+const (
+	UNK_TOKEN_ID int = 49407
+	BOS_TOKEN_ID int = 49406
+	EOS_TOKEN_ID int = 49407
+	PAD_TOKEN_ID int = 49407
+)
+
+func (gen *Generator) Tokenize(text string, padding bool) (tokens []int, weights []float32) {
 	tokens = make([]int, 0)
 	weights = make([]float32, 0)
 

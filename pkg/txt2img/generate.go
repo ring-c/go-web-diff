@@ -78,15 +78,7 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, 4, 1)
 		gen.GGML.TensorSetF32Rand(xT, seed)
 
-		/*
-			var pairCond = gen.GetLearnedCondition(gen.Model.GetCTX(), workCtx, in.Prompt, in.Width, in.Height, in.ClipSkip)
-
-			var c = gen.PairGet(pairCond, true)
-			var cVector = gen.PairGet(pairCond, false)
-
-			spew.Dump(c)
-			spew.Dump(cVector)
-		*/
+		// gen.SetLearnedCondition(gen.Model.GetCTX(), workCtx, in.Prompt, in.Width, in.Height, in.ClipSkip)
 
 		if in.Debug {
 			fmt.Printf("[%d/%d] Prep done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())

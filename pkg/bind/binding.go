@@ -53,8 +53,6 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 		libFilename: filename,
 	}
 
-	// purego.RegisterLibFunc(&impl.img2img, libSd, "img2img")
-
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
 
