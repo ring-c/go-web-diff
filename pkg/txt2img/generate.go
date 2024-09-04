@@ -11,8 +11,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
@@ -58,10 +56,10 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 			14, 0, 1, nil, 0, 0, false, "",
 		)
 
-		spew.Dump(data)
+		var images = goImageSlice(data, 1)
 
-		// gen.fileWrite.Add(1)
-		// go gen.writeFile(data, in, seed)
+		gen.fileWrite.Add(1)
+		go gen.writeFile(&images[0], in, seed)
 
 		if in.Debug {
 			fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
@@ -93,10 +91,12 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	return
 }
 
-func (gen *Generator) writeFile(img *image.RGBA, in *opts.Options, seed uint64) {
+func (gen *Generator) writeFile(img *Image, in *opts.Options, seed uint64) {
 	defer func() {
 		gen.fileWrite.Done()
 	}()
+
+	var outputImg = bytesToImage(img.Data, in.Width, in.Height)
 
 	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
 	var file *os.File
@@ -106,7 +106,7 @@ func (gen *Generator) writeFile(img *image.RGBA, in *opts.Options, seed uint64) 
 		return
 	}
 
-	err = imageToWriter(img, file)
+	err = imageToWriter(outputImg, file)
 	if err != nil {
 		println("writeFile:" + err.Error())
 		return
