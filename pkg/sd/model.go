@@ -29,6 +29,10 @@ func NewModel(in *opts.Options) (model *Model, err error) {
 		return
 	}
 
+	// if in.Debug {
+	// csd.SetLogCallBack()
+	// }
+
 	model = &Model{
 		options: in,
 		cSD:     csd,

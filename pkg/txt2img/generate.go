@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -36,10 +37,20 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 
 	var seed = in.Seed
 	if seed == 0 {
-		seed = rand.Uint64()
+		seed = rand.Int63()
 		if in.Debug {
 			fmt.Printf("Generating random starting seed: %d\n", seed)
 		}
+	}
+
+	var prompt = in.Prompt
+	for _, lora := range strings.Split(in.Loras, ", ") {
+		lora = strings.TrimSpace(lora)
+		if lora == "" {
+			continue
+		}
+
+		prompt += fmt.Sprintf("<lora:%s>, ", lora)
 	}
 
 	for i := 0; i < in.BatchCount; i++ {
@@ -51,9 +62,9 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 
 		var data = gen.Text2Image(
 			gen.Model.GetCTX(),
-			"test", "",
-			2, 7, 0, 768, 1024, int(in.SampleMethod),
-			14, 0, 1, nil, 0, 0, false, "",
+			prompt, in.NegativePrompt,
+			2, in.CfgScale, 0, in.Width, in.Height, int(in.SampleMethod),
+			in.SampleSteps, seed, in.BatchCount, nil, 0, 0, false, "",
 		)
 
 		var images = goImageSlice(data, 1)
@@ -91,7 +102,7 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	return
 }
 
-func (gen *Generator) writeFile(img *Image, in *opts.Options, seed uint64) {
+func (gen *Generator) writeFile(img *Image, in *opts.Options, seed int64) {
 	defer func() {
 		gen.fileWrite.Done()
 	}()

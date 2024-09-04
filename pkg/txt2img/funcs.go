@@ -24,22 +24,6 @@ func bytesToImage(byteData []byte, width, height int) (img *image.RGBA) {
 	return
 }
 
-func goString(c uintptr) string {
-	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&c))
-	if ptr == nil {
-		return ""
-	}
-	var length int
-	for {
-		if *(*byte)(unsafe.Add(ptr, uintptr(length))) == '\x00' {
-			break
-		}
-		length++
-	}
-	return unsafe.String((*byte)(ptr), length)
-}
-
 func goImageSlice(c unsafe.Pointer, size int) []Image {
 	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
 	ptr := *&c

@@ -33,6 +33,8 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
+	// sdSetLogCallback func(callback func(level int, text uintptr, data uintptr) uintptr, data int)
+
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
 
@@ -53,6 +55,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 		libFilename: filename,
 	}
 
+	// purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
 
@@ -101,3 +104,33 @@ func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Ima
 
 	return
 }
+
+/*
+
+func (c *CStableDiffusionImpl) SetLogCallBack() {
+
+	var cb = func(level int, text uintptr, data uintptr) uintptr {
+		// spew.Dump(goString(text))
+		println(text)
+		return 0
+	}
+
+	c.sdSetLogCallback(cb, 0)
+}
+
+func goString(c uintptr) string {
+	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
+	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&c))
+	if ptr == nil {
+		return ""
+	}
+	var length int
+	for {
+		if *(*byte)(unsafe.Add(ptr, uintptr(length))) == '\x00' {
+			break
+		}
+		length++
+	}
+	return unsafe.String((*byte)(ptr), length)
+}
+*/

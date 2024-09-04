@@ -26,12 +26,12 @@ type Options struct {
 	Prompt           string           `json:"prompt"`
 	NegativePrompt   string           `json:"negative_prompt"`
 	ClipSkip         int              `json:"clip_skip,string"`
-	CfgScale         float32          `json:"cfg_scale,string"`
+	CfgScale         float64          `json:"cfg_scale,string"`
 	Width            int              `json:"width,string"`
 	Height           int              `json:"height,string"`
 	SampleMethod     SampleMethod     `json:"sample_method,string"`
 	SampleSteps      int              `json:"sample_steps,string"`
-	Seed             uint64           `json:"seed,string"`
+	Seed             int64            `json:"seed,string"`
 	BatchCount       int              `json:"batch_count,string"`
 	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 

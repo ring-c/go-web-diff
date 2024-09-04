@@ -67,7 +67,7 @@ func Generate(c echo.Context) (err error) {
 	// 	}
 	//
 	// 	generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
-	// 	lastLora = in.Loras
+	lastLora = in.Loras
 	// }
 
 	resp.Filenames, err = generator.Generate(in)
