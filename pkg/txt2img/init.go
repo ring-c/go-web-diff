@@ -21,12 +21,25 @@ type Generator struct {
 	fileWrite sync.WaitGroup
 	filenames []string
 
-	// SetLearnedCondition func(sdCTX, ggmlCTX unsafe.Pointer, prompt string, width, height, clipSkip int)         // pair
-	GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
+	Text2Image func(
+		sdCTX unsafe.Pointer,
+		prompt, negPrompt string,
+		clipSkip int,
+		cfgScale, guidance float64,
+		width, height int,
+		sampleMethod int,
+		sampleSteps int,
+		seed int64,
+		batchCount int,
+		controlCond unsafe.Pointer,
+		controlStrength, styleStrength float64,
+		normalizeInput bool,
+		inputIDImagesPath string,
+	) unsafe.Pointer
 
-	DecodeFirstStage func(sdCTX, ggmlCTX, inputTX, outputTX unsafe.Pointer)
-
-	ApplyLora func(sdCTX unsafe.Pointer, lora string)
+	// GoSample func(sdCTX, ggmlCTX, xT unsafe.Pointer, prompt string, sigmasCnt int, sigmas []float32) unsafe.Pointer // ggml_tensor
+	// DecodeFirstStage func(sdCTX, ggmlCTX, inputTX, outputTX unsafe.Pointer)
+	// ApplyLora func(sdCTX unsafe.Pointer, lora string)
 }
 
 func New(in *opts.Options) (*Generator, error) {
@@ -52,23 +65,7 @@ func New(in *opts.Options) (*Generator, error) {
 
 	purego.RegisterLibFunc(&impl.GGML.Init, libSd, "go_ggml_init")
 	purego.RegisterLibFunc(&impl.GGML.Free, libSd, "ggml_free")
-	// purego.RegisterLibFunc(&impl.GGML.TensorOverhead, libSd, "ggml_tensor_overhead")
-	purego.RegisterLibFunc(&impl.GGML.NewTensor4D, libSd, "ggml_new_tensor_4d")
-	purego.RegisterLibFunc(&impl.GGML.TensorSetF32, libSd, "go_ggml_tensor_set_f32")
-	purego.RegisterLibFunc(&impl.GGML.TensorSetF32Rand, libSd, "go_ggml_tensor_set_f32_randn")
-
-	purego.RegisterLibFunc(&impl.GGML.TensorScale, libSd, "go_ggml_tensor_scale")
-	purego.RegisterLibFunc(&impl.GGML.TensorScaleOutput, libSd, "go_ggml_tensor_scale_output")
-	purego.RegisterLibFunc(&impl.GGML.TensorClamp, libSd, "go_ggml_tensor_clamp")
-
-	purego.RegisterLibFunc(&impl.GGML.TensorGetF32, libSd, "go_ggml_tensor_get_f32")
-	// purego.RegisterLibFunc(&impl.GGML.VectorToGgmlTensorI32, libSd, "go_vector_to_ggml_tensor_i32")
-
-	// purego.RegisterLibFunc(&impl.SetLearnedCondition, libSd, "go_set_learned_condition")
-	purego.RegisterLibFunc(&impl.ApplyLora, libSd, "apply_lora")
-
-	purego.RegisterLibFunc(&impl.GoSample, libSd, "go_sample")
-	purego.RegisterLibFunc(&impl.DecodeFirstStage, libSd, "go_decode_first_stage")
+	purego.RegisterLibFunc(&impl.Text2Image, libSd, "txt2img")
 
 	return &impl, err
 }

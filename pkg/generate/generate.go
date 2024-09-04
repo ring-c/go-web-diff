@@ -3,14 +3,9 @@ package generate
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
-	"strings"
-	"sync"
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/ring-c/go-web-diff/pkg/opts"
-	"github.com/ring-c/go-web-diff/pkg/sd"
 	"github.com/ring-c/go-web-diff/pkg/txt2img"
 )
 
@@ -57,23 +52,23 @@ func Generate(c echo.Context) (err error) {
 		lastModel = in.ModelPath
 	}
 
-	if in.Loras != lastLora {
-		var loraApply = make([]string, 0)
-		for _, loraD := range strings.Split(in.Loras, ", ") {
-			var lora = strings.TrimSpace(loraD)
-			if lora == "" {
-				continue
-			}
-
-			loraApply = append(
-				loraApply,
-				fmt.Sprintf("<lora:%s>", lora),
-			)
-		}
-
-		generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
-		lastLora = in.Loras
-	}
+	// if in.Loras != lastLora {
+	// 	var loraApply = make([]string, 0)
+	// 	for _, loraD := range strings.Split(in.Loras, ", ") {
+	// 		var lora = strings.TrimSpace(loraD)
+	// 		if lora == "" {
+	// 			continue
+	// 		}
+	//
+	// 		loraApply = append(
+	// 			loraApply,
+	// 			fmt.Sprintf("<lora:%s>", lora),
+	// 		)
+	// 	}
+	//
+	// 	generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
+	// 	lastLora = in.Loras
+	// }
 
 	resp.Filenames, err = generator.Generate(in)
 	if err != nil {
@@ -99,6 +94,7 @@ func ModelClose() {
 	generator.Model.Close()
 }
 
+/*
 func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {
 	err = model.LoadUpscaleModel(in.UpscalePath)
 	if err != nil {
@@ -128,3 +124,4 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 	wg.Wait()
 	return
 }
+*/

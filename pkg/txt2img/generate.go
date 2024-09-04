@@ -11,6 +11,8 @@ import (
 	"path"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
@@ -42,26 +44,6 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 		}
 	}
 
-	// negativePrompt := ""
-	// clipSkip := 2
-	// cfgScale := 1.0
-
-	var memSize uint64 = 10 * 1024 * 1024
-	memSize += uint64(in.Width * in.Height * 3 * 4)
-
-	var schedule = KarrasSchedule{}
-
-	var sigmas = schedule.GetSigmas(in.SampleSteps)
-	// spew.Dump(sigmas)
-
-	// if sdCtx.SD.FreeParamsImmediately {
-	// 	sdCtx.SD.CondStageModel.FreeParamsBuffer()
-	// }
-
-	// Sample
-	var W = in.Width / 8
-	var H = in.Height / 8
-
 	for i := 0; i < in.BatchCount; i++ {
 		if in.Debug {
 			fmt.Printf("[%d/%d] Generating with seed %d\n", i+1, in.BatchCount, seed)
@@ -69,29 +51,17 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 
 		var timeStart = time.Now()
 
-		var workCtx = gen.GGML.Init(memSize)
-		if workCtx == nil {
-			err = errors.New("gen.GGML.Init() failed")
-			return
-		}
+		var data = gen.Text2Image(
+			gen.Model.GetCTX(),
+			"test", "",
+			2, 7, 0, 768, 1024, int(in.SampleMethod),
+			14, 0, 1, nil, 0, 0, false, "",
+		)
 
-		xT := gen.GGML.NewTensor4D(workCtx, 0, W, H, 4, 1)
-		gen.GGML.TensorSetF32Rand(xT, seed)
+		spew.Dump(data)
 
-		// gen.SetLearnedCondition(gen.Model.GetCTX(), workCtx, in.Prompt, in.Width, in.Height, in.ClipSkip)
-
-		if in.Debug {
-			fmt.Printf("[%d/%d] Prep done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
-		}
-
-		var dataC = gen.GoSample(gen.Model.GetCTX(), workCtx, xT, in.Prompt, len(sigmas), sigmas)
-
-		var decoded = gen.computeFirstStage(workCtx, dataC, in)
-		var data = gen.sdTensorToImage(decoded, in)
-		go gen.GGML.Free(workCtx)
-
-		gen.fileWrite.Add(1)
-		go gen.writeFile(data, in, seed)
+		// gen.fileWrite.Add(1)
+		// go gen.writeFile(data, in, seed)
 
 		if in.Debug {
 			fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
