@@ -4,7 +4,6 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/sys/unix"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -86,8 +85,6 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 		RngType:  int(params.RngType),
 		Schedule: int(params.Schedule),
 	}
-
-	spew.Dump(paramsToC)
 
 	return &CStableDiffusionCtx{
 		Path: params.ModelPath,
