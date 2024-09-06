@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/sys/unix"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -42,23 +43,25 @@ func stringToByteArray(in string) *byte {
 }
 
 type NewSDContextGoParams struct {
-	ModelPath             *byte
-	VaePath               *byte
-	TaesdPath             *byte
-	ControlNetPath        *byte
-	LoraModelDir          *byte
-	EmbedDir              *byte
-	IDEmbedDir            *byte
+	ModelPath      *byte
+	VaePath        *byte
+	TaesdPath      *byte
+	ControlNetPath *byte
+	LoraModelDir   *byte
+	EmbedDir       *byte
+	IDEmbedDir     *byte
+
 	VaeDecodeOnly         bool
-	VaeTiling             bool
 	FreeParamsImmediately bool
-	NThreads              int16
-	WType                 opts.WType
-	RngType               opts.RNGType
-	Schedule              opts.Schedule
 	KeepClipOnCPU         bool
 	KeepControlNetCPU     bool
 	KeepVAEOnCPU          bool
+	VaeTiling             bool
+
+	NThreads int
+	WType    int
+	RngType  int
+	Schedule int
 }
 
 func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStableDiffusionCtx {
@@ -71,11 +74,20 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 		EmbedDir:       stringToByteArray(params.EmbedDir),
 		IDEmbedDir:     stringToByteArray(params.IDEmbedDir),
 
-		NThreads: params.NThreads,
-		WType:    params.WType,
-		RngType:  params.RngType,
-		Schedule: params.Schedule,
+		VaeTiling:             params.VaeTiling,
+		FreeParamsImmediately: params.FreeParamsImmediately,
+		VaeDecodeOnly:         params.VaeDecodeOnly,
+		KeepClipOnCPU:         params.KeepClipOnCpu,
+		KeepControlNetCPU:     params.KeepControlNetCpu,
+		KeepVAEOnCPU:          params.KeepVaeOnCpu,
+
+		NThreads: int(params.NThreads),
+		WType:    int(params.WType),
+		RngType:  int(params.RngType),
+		Schedule: int(params.Schedule),
 	}
+
+	spew.Dump(paramsToC)
 
 	return &CStableDiffusionCtx{
 		Path: params.ModelPath,

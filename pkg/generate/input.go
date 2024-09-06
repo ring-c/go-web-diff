@@ -9,13 +9,13 @@ import (
 )
 
 var DefaultInput = &opts.Options{
-	Threads:   10,
-	VaeTiling: false,
 	RngType:   opts.CUDA_RNG,
 	WType:     opts.F16,
 	Schedule:  opts.DEFAULT,
+	VaeTiling: true,
 	GpuEnable: true,
 	Debug:     true,
+	Threads:   10,
 
 	OutputDir: "./output/",
 
@@ -45,7 +45,8 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 	return
 }
 
-func parsePrompt(input string) (prompt string) {
+func parsePrompt(input string) string {
+	var data = make([]string, 0)
 	for _, str := range strings.Split(input, "\n") {
 		if len(str) < 1 {
 			continue
@@ -55,8 +56,8 @@ func parsePrompt(input string) (prompt string) {
 			continue
 		}
 
-		prompt += str + ", "
+		data = append(data, str)
 	}
 
-	return
+	return strings.Join(data, ", ")
 }

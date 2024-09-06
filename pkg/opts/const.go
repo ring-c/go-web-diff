@@ -1,10 +1,9 @@
 package opts
 
 type (
-	SampleMethod int
-	RNGType      int
-	WType        int
-	LogLevel     int
+	RNGType  int
+	WType    int
+	LogLevel int
 
 	OutputsImageType string
 )
@@ -13,6 +12,8 @@ const (
 	PNG  OutputsImageType = "PNG"
 	JPEG                  = "JPEG"
 )
+
+type SampleMethod int
 
 const (
 	EULER_A SampleMethod = iota

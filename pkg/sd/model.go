@@ -7,8 +7,6 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/ring-c/go-web-diff/pkg/bind"
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
@@ -81,8 +79,6 @@ func (sd *Model) LoadFromFile() (err error) {
 		RngType:               sd.options.RngType,
 		Schedule:              sd.options.Schedule,
 	}
-
-	spew.Dump(params)
 
 	sd.ctx = sd.cSD.NewSDContext(params)
 	if sd.ctx.CTX == nil {

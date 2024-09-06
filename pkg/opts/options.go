@@ -26,7 +26,7 @@ type Options struct {
 	Prompt           string           `json:"prompt"`
 	NegativePrompt   string           `json:"negative_prompt"`
 	ClipSkip         int              `json:"clip_skip,string"`
-	CfgScale         float64          `json:"cfg_scale,string"`
+	CfgScale         float32          `json:"cfg_scale,string"`
 	Width            int              `json:"width,string"`
 	Height           int              `json:"height,string"`
 	SampleMethod     SampleMethod     `json:"sample_method,string"`
