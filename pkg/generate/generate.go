@@ -6,12 +6,14 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/ring-c/go-web-diff/pkg/txt2img"
+	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 var (
-	generator *txt2img.Generator
+	model *sd.Model
+
 	lastModel string
+	lastVAE   string
 	lastLora  string
 )
 
@@ -39,17 +41,25 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	if in.ModelPath != lastModel || in.Loras != lastLora {
-		if generator != nil {
-			generator.Model.Close()
-		}
-
-		generator, err = txt2img.New(in)
+	if model == nil {
+		model, err = sd.NewModel()
 		if err != nil {
-			fmt.Printf("\n\n\nERROR INIT\n%s\n\n\n", err.Error())
+			fmt.Printf("\n\n\nERROR NewModel\n%s\n\n\n", err.Error())
 			return
 		}
+	}
+
+	model.SetOptions(in)
+
+	if in.ModelPath != lastModel || in.VaePath != lastVAE || in.Loras != lastLora {
+		err = model.LoadFromFile()
+		if err != nil {
+			fmt.Printf("\n\n\nERROR LoadFromFile\n%s\n\n\n", err.Error())
+			return
+		}
+
 		lastModel = in.ModelPath
+		lastVAE = in.VaePath
 	}
 
 	// if in.Loras != lastLora {
@@ -70,7 +80,7 @@ func Generate(c echo.Context) (err error) {
 	lastLora = in.Loras
 	// }
 
-	resp.Filenames, err = generator.Generate(in)
+	resp.Filenames, err = model.Generate(in)
 	if err != nil {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)
@@ -91,7 +101,7 @@ func Generate(c echo.Context) (err error) {
 }
 
 func ModelClose() {
-	generator.Model.Close()
+	model.Close()
 }
 
 /*

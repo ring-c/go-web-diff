@@ -1,4 +1,4 @@
-package txt2img
+package sd
 
 import (
 	"image"
@@ -33,14 +33,14 @@ func goImageSlice(c unsafe.Pointer, size int) []Image {
 	img := (*cImage)(ptr)
 	goImages := make([]Image, 0, size)
 	imgSlice := unsafe.Slice(img, size)
-	for _, image := range imgSlice {
+	for _, imageC := range imgSlice {
 		var gImg Image
-		gImg.Channel = image.channel
-		gImg.Width = image.width
-		gImg.Height = image.height
-		dataPtr := *(*unsafe.Pointer)(unsafe.Pointer(&image.data))
+		gImg.Channel = imageC.channel
+		gImg.Width = imageC.width
+		gImg.Height = imageC.height
+		dataPtr := *(*unsafe.Pointer)(unsafe.Pointer(&imageC.data))
 		if ptr != nil {
-			gImg.Data = unsafe.Slice((*byte)(dataPtr), image.channel*image.width*image.height)
+			gImg.Data = unsafe.Slice((*byte)(dataPtr), imageC.channel*imageC.width*imageC.height)
 		}
 		goImages = append(goImages, gImg)
 	}

@@ -3,11 +3,11 @@ package sd
 import (
 	"errors"
 	"image"
-	"image/png"
-	"io"
 	"os"
 	"sync"
 	"unsafe"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -19,26 +19,28 @@ type Model struct {
 	cSD *bind.CStableDiffusionImpl
 	ctx *bind.CStableDiffusionCtx
 
+	filenames []string
+	fileWrite sync.WaitGroup
+
 	esrganPath  string
 	upscalerCtx *bind.CUpScalerCtx
 }
 
-func NewModel(in *opts.Options) (model *Model, err error) {
+func NewModel() (model *Model, err error) {
 	csd, err := bind.NewCStableDiffusion()
 	if err != nil {
 		return
 	}
 
-	// if in.Debug {
-	// csd.SetLogCallBack()
-	// }
-
 	model = &Model{
-		options: in,
-		cSD:     csd,
+		cSD: csd,
 	}
 
 	return
+}
+
+func (sd *Model) SetOptions(in *opts.Options) {
+	sd.options = in
 }
 
 func (sd *Model) Close() {
@@ -50,9 +52,9 @@ func (sd *Model) Close() {
 	sd.cSD.Close()
 }
 
-func (sd *Model) LoadFromFile(path string) (err error) {
+func (sd *Model) LoadFromFile() (err error) {
 	if sd.ctx != nil {
-		if sd.ctx.Path == path {
+		if sd.ctx.Path == sd.options.ModelPath {
 			return
 		}
 
@@ -60,14 +62,14 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 		sd.ctx = nil
 	}
 
-	_, err = os.Stat(path)
+	_, err = os.Stat(sd.options.ModelPath)
 	if err != nil {
 		err = errors.New("the system cannot find the model file specified")
 		return
 	}
 
 	var params = &bind.NewSDContextParams{
-		ModelPath:             path,
+		ModelPath:             sd.options.ModelPath,
 		LoraModelDir:          sd.options.LoraModelDir,
 		VaePath:               sd.options.VaePath,
 		TAESDPath:             sd.options.TaesdPath,
@@ -80,22 +82,11 @@ func (sd *Model) LoadFromFile(path string) (err error) {
 		Schedule:              sd.options.Schedule,
 	}
 
+	spew.Dump(params)
+
 	sd.ctx = sd.cSD.NewSDContext(params)
 	if sd.ctx.CTX == nil {
 		err = errors.New("error sd context creation")
-		return
-	}
-
-	return
-}
-
-func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
-	var enc = png.Encoder{
-		CompressionLevel: png.BestSpeed,
-	}
-
-	err = enc.Encode(writer, image)
-	if err != nil {
 		return
 	}
 

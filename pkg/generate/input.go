@@ -9,11 +9,11 @@ import (
 )
 
 var DefaultInput = &opts.Options{
-	Threads:   -1,
-	VaeTiling: true,
-	RngType:   opts.STD_DEFAULT_RNG,
+	Threads:   10,
+	VaeTiling: false,
+	RngType:   opts.CUDA_RNG,
 	WType:     opts.F16,
-	Schedule:  opts.KARRAS,
+	Schedule:  opts.DEFAULT,
 	GpuEnable: true,
 	Debug:     true,
 

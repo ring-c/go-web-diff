@@ -41,6 +41,22 @@ type CStableDiffusionImpl struct {
 	newUpscalerCtx  func(esrganPath string, nThreads int16, wtype int) unsafe.Pointer
 	freeUpscalerCtx func(ctx unsafe.Pointer)
 
+	Text2Image func(
+		sdCTX unsafe.Pointer,
+		prompt, negPrompt string,
+		clipSkip int,
+		cfgScale, guidance float64,
+		width, height int,
+		sampleMethod int,
+		sampleSteps int,
+		seed int64,
+		batchCount int,
+		controlCond unsafe.Pointer,
+		controlStrength, styleStrength float64,
+		normalizeInput bool,
+		inputIDImagesPath string,
+	) unsafe.Pointer
+
 	Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
 }
 
@@ -63,6 +79,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
 
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
+	purego.RegisterLibFunc(&impl.Text2Image, libSd, "txt2img")
 
 	return &impl, err
 }

@@ -1,4 +1,4 @@
-package txt2img
+package sd
 
 import (
 	"errors"
@@ -12,15 +12,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error) {
-	var timeTotalStart = time.Now()
+func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
+	// var timeTotalStart = time.Now()
 
-	gen.filenames = make([]string, 0)
+	sd.filenames = make([]string, 0)
 
-	if gen.Model.GetCTX() == nil {
+	if sd.GetCTX() == nil {
 		err = errors.New("model not loaded")
 		return
 	}
@@ -50,42 +52,44 @@ func (gen *Generator) Generate(in *opts.Options) (filenames []string, err error)
 			continue
 		}
 
-		prompt += fmt.Sprintf("<lora:%s>, ", lora)
+		prompt += fmt.Sprintf("<lora:%s>", lora)
 	}
 
-	for i := 0; i < in.BatchCount; i++ {
-		if in.Debug {
-			fmt.Printf("[%d/%d] Generating with seed %d\n", i+1, in.BatchCount, seed)
-		}
+	// for i := 0; i < in.BatchCount; i++ {
+	// 	if in.Debug {
+	// 		fmt.Printf("[%d/%d] Generating with seed %d\n", i+1, in.BatchCount, seed)
+	// 	}
+	//
+	// 	var timeStart = time.Now()
 
-		var timeStart = time.Now()
+	spew.Dump(in)
 
-		var data = gen.Text2Image(
-			gen.Model.GetCTX(),
-			prompt, in.NegativePrompt,
-			2, in.CfgScale, 0, in.Width, in.Height, int(in.SampleMethod),
-			in.SampleSteps, seed, in.BatchCount, nil, 0, 0, false, "",
-		)
+	var data = sd.cSD.Text2Image(
+		sd.GetCTX(),
+		prompt, in.NegativePrompt,
+		in.ClipSkip, in.CfgScale, 3.5, in.Width, in.Height, int(in.SampleMethod),
+		in.SampleSteps, seed, in.BatchCount, nil, 0.9, 20, false, "",
+	)
 
-		var images = goImageSlice(data, 1)
+	var images = goImageSlice(data, 1)
 
-		gen.fileWrite.Add(1)
-		go gen.writeFile(&images[0], in, seed)
+	sd.fileWrite.Add(1)
+	go sd.writeFile(&images[0], in, seed)
 
-		if in.Debug {
-			fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
-		}
+	// 	if in.Debug {
+	// 		fmt.Printf("[%d/%d] Done in %gs\n", i+1, in.BatchCount, time.Now().Sub(timeStart).Seconds())
+	// 	}
+	//
+	// 	seed++
+	// }
 
-		seed++
-	}
+	// if in.Debug {
+	// 	fmt.Printf("Total Done in %gs\n", time.Now().Sub(timeTotalStart).Seconds())
+	// }
 
-	if in.Debug {
-		fmt.Printf("Total Done in %gs\n", time.Now().Sub(timeTotalStart).Seconds())
-	}
+	sd.fileWrite.Wait()
 
-	gen.fileWrite.Wait()
-
-	filenames = gen.filenames
+	filenames = sd.filenames
 	return
 }
 
@@ -102,9 +106,9 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	return
 }
 
-func (gen *Generator) writeFile(img *Image, in *opts.Options, seed int64) {
+func (sd *Model) writeFile(img *Image, in *opts.Options, seed int64) {
 	defer func() {
-		gen.fileWrite.Done()
+		sd.fileWrite.Done()
 	}()
 
 	var outputImg = bytesToImage(img.Data, in.Width, in.Height)
@@ -129,5 +133,5 @@ func (gen *Generator) writeFile(img *Image, in *opts.Options, seed int64) {
 		return
 	}
 
-	gen.filenames = append(gen.filenames, filename)
+	sd.filenames = append(sd.filenames, filename)
 }
