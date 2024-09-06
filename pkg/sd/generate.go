@@ -62,10 +62,12 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 		seed, in.BatchCount, nil, 0.9, 20, false, "",
 	)
 
-	for _, img := range goImageSlice(data, in.BatchCount) {
+	sd.fileWrite.Add(in.BatchCount)
+	for num, img := range goImageSlice(data, in.BatchCount) {
 		var imgData = &img
-		sd.fileWrite.Add(1)
-		go sd.writeFile(imgData, in, seed)
+		var num = num
+
+		go sd.writeFile(imgData, in, num, seed)
 	}
 
 	sd.fileWrite.Wait()
@@ -87,14 +89,14 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 	return
 }
 
-func (sd *Model) writeFile(img *Image, in *opts.Options, seed int64) {
+func (sd *Model) writeFile(img *Image, in *opts.Options, num int, seed int64) {
 	defer func() {
 		sd.fileWrite.Done()
 	}()
 
 	var outputImg = bytesToImage(img.Data, in.Width, in.Height)
 
-	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), seed)
+	var filename = fmt.Sprintf("%d-%d-%d.png", time.Now().Unix(), num, seed)
 	var file *os.File
 	file, err := os.Create(path.Join(in.OutputDir, filename))
 	if err != nil {
