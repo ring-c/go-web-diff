@@ -38,9 +38,9 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 	var seed = in.Seed
 	if seed == -1 {
 		seed = rand.Int63()
-		if in.Debug {
-			fmt.Printf("Generating random starting seed: %d\n", seed)
-		}
+		// if in.Debug {
+		// 	fmt.Printf("Generating random starting seed: %d\n", seed)
+		// }
 	}
 
 	var prompt = in.Prompt

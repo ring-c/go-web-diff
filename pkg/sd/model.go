@@ -78,6 +78,7 @@ func (sd *Model) LoadFromFile() (err error) {
 		WType:                 sd.options.WType,
 		RngType:               sd.options.RngType,
 		Schedule:              sd.options.Schedule,
+		WithLogs:              true,
 	}
 
 	sd.ctx = sd.cSD.NewSDContext(params)
