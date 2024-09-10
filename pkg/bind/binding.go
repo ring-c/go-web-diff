@@ -2,8 +2,10 @@ package bind
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"os"
+	"strings"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -33,7 +35,7 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	// sdSetLogCallback func(callback func(level int, text uintptr, data uintptr) uintptr, data int)
+	SDSetLogCallback func(callback func(level int, text *byte, data unsafe.Pointer) unsafe.Pointer, data int)
 
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
@@ -71,7 +73,7 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 		libFilename: filename,
 	}
 
-	// purego.RegisterLibFunc(&impl.sdSetLogCallback, libSd, "sd_set_log_callback")
+	purego.RegisterLibFunc(&impl.SDSetLogCallback, libSd, "sd_set_log_callback")
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
 
@@ -122,32 +124,52 @@ func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Ima
 	return
 }
 
-/*
+const LogBufferSize = 1024 // from sd.cpp
+
+func logCallback(level int, text *byte, _ unsafe.Pointer) unsafe.Pointer {
+	var tagColor int
+	var levelStr string
+
+	switch level {
+	case 0:
+		tagColor = 37
+		levelStr = "DEBUG"
+		break
+	case 1:
+		tagColor = 34
+		levelStr = "INFO"
+		break
+	case 2:
+		tagColor = 35
+		levelStr = "WARN"
+		break
+	case 3:
+		tagColor = 31
+		levelStr = "ERROR"
+		break
+	default:
+		tagColor = 33
+		levelStr = "?????"
+		break
+	}
+
+	var logText = strings.SplitN(unsafe.String(text, LogBufferSize), "\x00", 2)
+	if len(logText) < 1 {
+		return nil
+	}
+	// logText[0] = strings.TrimSpace(logText[0])
+
+	var levelText = ""
+	if level != 4 {
+		levelText = fmt.Sprintf("\033[%d;1m[%-5s]\033[0m - ", tagColor, levelStr)
+		// logText[0] += "\n"
+	}
+
+	fmt.Printf("%s%s", levelText, logText[0])
+
+	return nil
+}
 
 func (c *CStableDiffusionImpl) SetLogCallBack() {
-
-	var cb = func(level int, text uintptr, data uintptr) uintptr {
-		// spew.Dump(goString(text))
-		println(text)
-		return 0
-	}
-
-	c.sdSetLogCallback(cb, 0)
+	c.SDSetLogCallback(logCallback, 0)
 }
-
-func goString(c uintptr) string {
-	// We take the address and then dereference it to trick go vet from creating a possible misuse of unsafe.Pointer
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&c))
-	if ptr == nil {
-		return ""
-	}
-	var length int
-	for {
-		if *(*byte)(unsafe.Add(ptr, uintptr(length))) == '\x00' {
-			break
-		}
-		length++
-	}
-	return unsafe.String((*byte)(ptr), length)
-}
-*/

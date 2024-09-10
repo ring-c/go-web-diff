@@ -39,6 +39,9 @@ func NewModel() (model *Model, err error) {
 
 func (sd *Model) SetOptions(in *opts.Options) {
 	sd.options = in
+	if in.Debug {
+		sd.cSD.SetLogCallBack()
+	}
 }
 
 func (sd *Model) Close() {
@@ -78,7 +81,7 @@ func (sd *Model) LoadFromFile() (err error) {
 		WType:                 sd.options.WType,
 		RngType:               sd.options.RngType,
 		Schedule:              sd.options.Schedule,
-		WithLogs:              true,
+		WithLogs:              false,
 	}
 
 	sd.ctx = sd.cSD.NewSDContext(params)
