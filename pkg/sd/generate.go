@@ -33,7 +33,7 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 		return
 	}
 
-	sd.filenames = make([]string, 0)
+	sd.filenames = make([]string, in.BatchCount)
 
 	var seed = in.Seed
 	if seed == -1 {
@@ -116,5 +116,5 @@ func (sd *Model) writeFile(img *Image, in *opts.Options, num int, seed int64) {
 		return
 	}
 
-	sd.filenames = append(sd.filenames, filename)
+	sd.filenames[num] = filename
 }

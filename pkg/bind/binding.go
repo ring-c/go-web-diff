@@ -126,7 +126,17 @@ func (c *CStableDiffusionImpl) UpscaleImage(ctx *CUpScalerCtx, decoded image.Ima
 
 const LogBufferSize = 1024 // from sd.cpp
 
-func logCallback(level int, text *byte, _ unsafe.Pointer) unsafe.Pointer {
+func logCallback(level int, text *byte, _ unsafe.Pointer) (retCode unsafe.Pointer) {
+	var logData = strings.SplitN(unsafe.String(text, LogBufferSize), "\x00", 2)
+	if len(logData) < 1 {
+		return
+	}
+	var logText = logData[0]
+
+	if level == 0 && strings.Contains(logText, "ggml_extend.hpp:998") {
+		return
+	}
+
 	var tagColor int
 	var levelStr string
 
@@ -153,10 +163,6 @@ func logCallback(level int, text *byte, _ unsafe.Pointer) unsafe.Pointer {
 		break
 	}
 
-	var logText = strings.SplitN(unsafe.String(text, LogBufferSize), "\x00", 2)
-	if len(logText) < 1 {
-		return nil
-	}
 	// logText[0] = strings.TrimSpace(logText[0])
 
 	var levelText = ""
@@ -165,9 +171,9 @@ func logCallback(level int, text *byte, _ unsafe.Pointer) unsafe.Pointer {
 		// logText[0] += "\n"
 	}
 
-	fmt.Printf("%s%s", levelText, logText[0])
+	fmt.Printf("%s%s", levelText, logText)
 
-	return nil
+	return
 }
 
 func (c *CStableDiffusionImpl) SetLogCallBack() {
