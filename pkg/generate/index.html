@@ -14,93 +14,94 @@
 </head>
 
 <body>
-
 <form id="main-form">
     <table style="width: 100%;">
         <tr>
             <td style="text-align: right; width: 286px; vertical-align: top;">
                 <label>
                     Prompt:<br/>
-                    <textarea name="prompt" cols="30" rows="48"></textarea>
+                    <textarea name="prompt" cols="30" rows="54"></textarea>
                 </label><br/>
 
                 <div style="text-align: right;">
                     <span id="status"></span>&nbsp;<button type="submit">Send</button>
                 </div>
+
+                <details>
+                    <summary style="text-align: left;">Options</summary>
+
+                    <label>
+                        Negative prompt:<br/>
+                        <textarea name="negative_prompt" cols="30" rows="4"></textarea>
+                    </label><br/>
+
+                    <label>
+                        Model path:
+                        <input type="text" name="model_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        VAE path:
+                        <input type="text" name="vae_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        Size:
+                        <input type="number" name="width" value="1024" style="width: 100px;"/>x
+                        <input type="number" name="height" value="768" style="width: 100px;"/>
+
+                    </label><br/>
+                    <label>
+                        CFG scale:
+                        <input type="number" name="cfg_scale" value="7"/>
+                    </label><br/>
+
+                    <label>
+                        Seed:
+                        <input type="number" name="seed" value="-1"/>
+                    </label><br/>
+
+                    <label>
+                        Sample steps:
+                        <input type="number" name="sample_steps" value="24"/>
+                    </label><br/>
+
+                    <label>
+                        Batch count:
+                        <input type="number" name="batch_count" value="1"/>
+                    </label><br/>
+
+
+                    <label>
+                        Show preview:
+                        <input type="checkbox" name="show_preview" checked/>
+                    </label><br/>
+
+                    <label>
+                        Full width preview:
+                        <input type="checkbox" name="full_width_preview"/>
+                    </label><br/>
+
+                    <label>
+                        Repeat:
+                        <input type="checkbox" id="repeat"/>
+                    </label>
+
+                    <hr/>
+
+                    <label>
+                        LORAs dir:
+                        <input type="text" name="lora_model_dir" value=""/>
+                    </label><br/>
+
+                    <label>
+                        <textarea name="loras" cols="30" rows="4"></textarea>
+                    </label>
+                </details>
             </td>
 
             <td id="preview" style="vertical-align: top;">
                 &nbsp;
-            </td>
-
-            <td style="text-align: right; width: 286px; vertical-align: top;">
-                <label>
-                    Negative prompt:<br/>
-                    <textarea name="negative_prompt" cols="30" rows="4"></textarea>
-                </label><br/>
-
-                <label>
-                    Model path:
-                    <input type="text" name="model_path" value=""/>
-                </label><br/>
-
-                <label>
-                    VAE path:
-                    <input type="text" name="vae_path" value=""/>
-                </label><br/>
-
-                <label>
-                    Size:
-                    <input type="number" name="width" value="1024" style="width: 100px;"/>x
-                    <input type="number" name="height" value="768" style="width: 100px;"/>
-
-                </label><br/>
-                <label>
-                    CFG scale:
-                    <input type="number" name="cfg_scale" value="7"/>
-                </label><br/>
-
-                <label>
-                    Seed:
-                    <input type="number" name="seed" value="-1"/>
-                </label><br/>
-
-                <label>
-                    Sample steps:
-                    <input type="number" name="sample_steps" value="24"/>
-                </label><br/>
-
-                <label>
-                    Batch count:
-                    <input type="number" name="batch_count" value="1"/>
-                </label><br/>
-
-
-                <label>
-                    Show preview:
-                    <input type="checkbox" name="show_preview" checked/>
-                </label><br/>
-
-                <label>
-                    Full width preview:
-                    <input type="checkbox" name="full_width_preview"/>
-                </label><br/>
-
-                <label>
-                    Repeat:
-                    <input type="checkbox" id="repeat"/>
-                </label>
-
-                <hr/>
-
-                <label>
-                    LORAs dir:
-                    <input type="text" name="lora_model_dir" value=""/>
-                </label><br/>
-
-                <label>
-                    <textarea name="loras" cols="30" rows="4"></textarea>
-                </label>
             </td>
         </tr>
     </table>
