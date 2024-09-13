@@ -47,8 +47,9 @@
 
                     <label>
                         Size:
-                        <input type="number" name="width" value="1024" style="width: 100px;"/>x
-                        <input type="number" name="height" value="768" style="width: 100px;"/>
+                        <input type="number" name="width" id="width" value="1024" style="width: 100px;"/>
+                        <span onclick="sizeSwitch()" style="cursor: ew-resize;">&nbsp;X&nbsp;</span>
+                        <input type="number" name="height" id="height" value="768" style="width: 100px;"/>
                     </label><br/>
                     <label>
                         CFG scale:
@@ -137,6 +138,12 @@
         }
 
         return data
+    }
+
+    function sizeSwitch() {
+        let height = document.getElementById("width").value
+        document.getElementById("width").value = document.getElementById("height").value
+        document.getElementById("height").value = height
     }
 
     function formSave(data) {
