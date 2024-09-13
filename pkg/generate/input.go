@@ -41,7 +41,7 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 
 	data.Prompt = parsePrompt(data.Prompt)
 	data.NegativePrompt = parsePrompt(data.NegativePrompt)
-	data.Loras = parsePrompt(data.Loras)
+	data.Lora = parsePrompt(data.Lora)
 	return
 }
 

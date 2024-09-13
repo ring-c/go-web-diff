@@ -51,7 +51,7 @@ func Generate(c echo.Context) (err error) {
 
 	model.SetOptions(in)
 
-	if in.ModelPath != lastModel || in.VaePath != lastVAE || in.Loras != lastLora {
+	if in.ModelPath != lastModel || in.VaePath != lastVAE || in.Lora != lastLora {
 		err = model.LoadFromFile()
 		if err != nil {
 			fmt.Printf("\n\n\nERROR LoadFromFile\n%s\n\n\n", err.Error())
@@ -62,9 +62,9 @@ func Generate(c echo.Context) (err error) {
 		lastVAE = in.VaePath
 	}
 
-	// if in.Loras != lastLora {
+	// if in.Lora != lastLora {
 	// 	var loraApply = make([]string, 0)
-	// 	for _, loraD := range strings.Split(in.Loras, ", ") {
+	// 	for _, loraD := range strings.Split(in.Lora, ", ") {
 	// 		var lora = strings.TrimSpace(loraD)
 	// 		if lora == "" {
 	// 			continue
@@ -77,7 +77,7 @@ func Generate(c echo.Context) (err error) {
 	// 	}
 	//
 	// 	generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
-	lastLora = in.Loras
+	lastLora = in.Lora
 	// }
 
 	resp.Filenames, err = model.Generate(in)
@@ -122,7 +122,7 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 		}
 
 		if in.Debug {
-			fmt.Printf("\nUpscaling %d/%d: %s\n\n", i+1, total, file)
+			fmt.Printf("\nUp scaling %d/%d: %s\n\n", i+1, total, file)
 		}
 
 		err = model.UpscaleImage(wg, filenameIn, filenameOut, 2)

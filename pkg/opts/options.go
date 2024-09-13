@@ -35,5 +35,5 @@ type Options struct {
 	BatchCount       int              `json:"batch_count,string"`
 	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 
-	Loras string `json:"loras"`
+	Lora string `json:"lora"`
 }

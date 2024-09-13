@@ -44,7 +44,7 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 	}
 
 	var prompt = in.Prompt
-	for _, lora := range strings.Split(in.Loras, ", ") {
+	for _, lora := range strings.Split(in.Lora, ", ") {
 		lora = strings.TrimSpace(lora)
 		if lora == "" {
 			continue
