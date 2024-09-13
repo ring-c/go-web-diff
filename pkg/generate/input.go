@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -56,7 +57,12 @@ func parsePrompt(input string) string {
 			continue
 		}
 
-		data = append(data, str)
+		var text = fmt.Sprintf("(%s:1)", str)
+		if strings.Contains("(", str) && strings.Contains(":", str) && strings.Contains(")", str) {
+			text = str
+		}
+
+		data = append(data, text)
 	}
 
 	return strings.Join(data, ", ")
