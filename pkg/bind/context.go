@@ -2,7 +2,6 @@ package bind
 
 import (
 	"runtime"
-	"unsafe"
 
 	"golang.org/x/sys/unix"
 
@@ -13,7 +12,7 @@ type NewSDContextParams struct {
 	ModelPath    string
 	LoraModelDir string
 	VaePath      string
-	NThreads     int16
+	NThreads     uint8
 	WType        opts.WType
 	RngType      opts.RNGType
 	Schedule     opts.Schedule
@@ -58,11 +57,12 @@ type NewSDContextGoParams struct {
 	KeepVAEOnCPU          bool
 	VaeTiling             bool
 	WithLogs              bool
+	ShowDebug             bool
 
-	NThreads int
-	WType    int
-	RngType  int
-	Schedule int
+	NThreads uint8
+	WType    uint8
+	RngType  uint8
+	Schedule uint8
 }
 
 func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStableDiffusionCtx {
@@ -82,11 +82,12 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 		KeepControlNetCPU:     params.KeepControlNetCpu,
 		KeepVAEOnCPU:          params.KeepVaeOnCpu,
 		WithLogs:              params.WithLogs,
+		ShowDebug:             false,
 
-		NThreads: int(params.NThreads),
-		WType:    int(params.WType),
-		RngType:  int(params.RngType),
-		Schedule: int(params.Schedule),
+		NThreads: params.NThreads,
+		WType:    uint8(params.WType),
+		RngType:  uint8(params.RngType),
+		Schedule: uint8(params.Schedule),
 	}
 
 	return &CStableDiffusionCtx{
@@ -102,15 +103,14 @@ func (c *CStableDiffusionImpl) FreeSDContext(ctx *CStableDiffusionCtx) {
 	ctx = nil
 }
 
-func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads int16, wType opts.WType) *CUpScalerCtx {
+func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads uint8, wType opts.WType) *CUpScalerCtx {
 	return &CUpScalerCtx{
 		ctx: c.newUpscalerCtx(esrganPath, nThreads, int(wType)),
 	}
 }
 
 func (c *CStableDiffusionImpl) FreeUpscalerCtx(ctx *CUpScalerCtx) {
-	ptr := *(*unsafe.Pointer)(unsafe.Pointer(&ctx.ctx))
-	if ptr != nil {
+	if ctx != nil {
 		c.freeUpscalerCtx(ctx.ctx)
 	}
 	ctx = nil

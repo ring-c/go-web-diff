@@ -63,25 +63,8 @@ func Generate(c echo.Context) (err error) {
 
 		lastModel = in.ModelPath
 		lastVAE = in.VaePath
+		lastLora = in.Lora
 	}
-
-	// if in.Lora != lastLora {
-	// 	var loraApply = make([]string, 0)
-	// 	for _, loraD := range strings.Split(in.Lora, ", ") {
-	// 		var lora = strings.TrimSpace(loraD)
-	// 		if lora == "" {
-	// 			continue
-	// 		}
-	//
-	// 		loraApply = append(
-	// 			loraApply,
-	// 			fmt.Sprintf("<lora:%s>", lora),
-	// 		)
-	// 	}
-	//
-	// 	generator.ApplyLora(generator.Model.GetCTX(), strings.Join(loraApply, ", "))
-	lastLora = in.Lora
-	// }
 
 	resp.Filenames, err = model.Generate(in)
 	if err != nil {
@@ -102,6 +85,10 @@ func Generate(c echo.Context) (err error) {
 }
 
 func ModelClose() {
+	if model == nil {
+		return
+	}
+
 	model.Close()
 }
 

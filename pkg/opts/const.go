@@ -1,19 +1,13 @@
 package opts
 
-type (
-	RNGType  int
-	WType    int
-	LogLevel int
-
-	OutputsImageType string
-)
+type OutputsImageType string
 
 const (
 	PNG  OutputsImageType = "PNG"
 	JPEG                  = "JPEG"
 )
 
-type SampleMethod int
+type SampleMethod uint8
 
 const (
 	EULER_A SampleMethod = iota
@@ -27,12 +21,14 @@ const (
 	N_SAMPLE_METHODS
 )
 
+type RNGType uint8
+
 const (
 	STD_DEFAULT_RNG RNGType = iota
 	CUDA_RNG
 )
 
-type Schedule int
+type Schedule uint8
 
 const (
 	DEFAULT Schedule = iota
@@ -40,6 +36,8 @@ const (
 	KARRAS
 	N_SCHEDULES
 )
+
+type WType uint8
 
 const (
 	F32   WType = 0
@@ -60,11 +58,4 @@ const (
 	I16         = 17
 	I32         = 18
 	COUNT       = 19 // don't use this when specifying a type
-)
-
-const (
-	DEBUG LogLevel = iota
-	INFO
-	WARN
-	ERROR
 )

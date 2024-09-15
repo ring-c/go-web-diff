@@ -9,8 +9,6 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
-
-	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
 type CStableDiffusionCtx struct {
@@ -22,7 +20,7 @@ type CUpScalerCtx struct {
 	ctx unsafe.Pointer
 }
 
-type CLogCallback func(level opts.LogLevel, text string)
+type CLogCallback func(level int, text string)
 
 type cImage struct {
 	width   uint32
@@ -40,7 +38,7 @@ type CStableDiffusionImpl struct {
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
 
-	newUpscalerCtx  func(esrganPath string, nThreads int16, wtype int) unsafe.Pointer
+	newUpscalerCtx  func(esrganPath string, nThreads uint8, wType int) unsafe.Pointer
 	freeUpscalerCtx func(ctx unsafe.Pointer)
 
 	Text2Image func(

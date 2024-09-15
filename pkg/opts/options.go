@@ -7,7 +7,7 @@ type Options struct {
 	VaeDecodeOnly         bool     `json:"vae_decode_only"`         //
 	VaeTiling             bool     `json:"vae_tiling"`              //
 	FreeParamsImmediately bool     `json:"free_params_immediately"` //
-	Threads               int16    `json:"threads,string"`          // CPU generation
+	Threads               uint8    `json:"threads,string"`          // CPU generation
 	WType                 WType    `json:"w_type"`                  //
 	RngType               RNGType  `json:"rng_type"`                //
 	Schedule              Schedule `json:"schedule"`                //
