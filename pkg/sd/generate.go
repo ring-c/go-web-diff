@@ -28,11 +28,6 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 		return
 	}
 
-	if in.Width%8 != 0 || in.Height%8 != 0 {
-		err = errors.New("width and height must be multiples of 8")
-		return
-	}
-
 	sd.filenames = make([]string, in.BatchCount)
 
 	var seed = in.Seed

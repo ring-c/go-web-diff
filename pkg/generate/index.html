@@ -17,10 +17,10 @@
 <form id="main-form">
     <table style="width: 100%;">
         <tr>
-            <td style="text-align: right; width: 286px; vertical-align: top;">
+            <td style="text-align: right; width: 321px; vertical-align: top;">
                 <label>
                     Prompt:<br/>
-                    <textarea name="prompt" cols="30" rows="54"></textarea>
+                    <textarea name="prompt" cols=32 rows=54></textarea>
                 </label><br/>
 
                 <div style="text-align: right;">
@@ -101,6 +101,23 @@
                     <label>
                         <textarea name="lora" cols="30" rows="4"></textarea>
                     </label>
+
+                    <hr/>
+
+                    <label>
+                        Upscale model path:
+                        <input type="text" name="upscale_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        Upscale:
+                        <input type="checkbox" name="with_upscale"/>
+                    </label><br/>
+
+                    <label>
+                        Delete Upscaled:
+                        <input type="checkbox" name="delete_upscaled"/>
+                    </label><br/>
                 </details>
             </td>
 

@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -40,13 +41,18 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 		return
 	}
 
-	data.Prompt = parsePrompt(data.Prompt)
-	data.NegativePrompt = parsePrompt(data.NegativePrompt)
-	data.Lora = parsePrompt(data.Lora)
+	if data.Width%8 != 0 || data.Height%8 != 0 {
+		err = errors.New("width and height must be multiples of 8")
+		return
+	}
+
+	data.Prompt = parsePrompt(data.Prompt, true)
+	data.NegativePrompt = parsePrompt(data.NegativePrompt, true)
+	data.Lora = parsePrompt(data.Lora, false)
 	return
 }
 
-func parsePrompt(input string) string {
+func parsePrompt(input string, withGroups bool) string {
 	var data = make([]string, 0)
 	for _, str := range strings.Split(input, "\n") {
 		if len(str) < 1 {
@@ -58,7 +64,7 @@ func parsePrompt(input string) string {
 		}
 
 		var text = fmt.Sprintf("(%s:1)", str)
-		if strings.Contains("(", str) && strings.Contains(":", str) && strings.Contains(")", str) {
+		if !withGroups || (strings.Contains("(", str) && strings.Contains(":", str) && strings.Contains(")", str)) {
 			text = str
 		}
 

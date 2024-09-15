@@ -3,9 +3,12 @@ package generate
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
@@ -87,14 +90,12 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	/*
-		if in.WithUpscale {
-			err = Upscale(model, in, filenames)
-			if err != nil {
-				return
-			}
+	if in.WithUpscale {
+		err = Upscale(model, in, resp.Filenames)
+		if err != nil {
+			return
 		}
-	*/
+	}
 
 	_ = c.JSON(http.StatusOK, resp)
 	return
@@ -104,7 +105,6 @@ func ModelClose() {
 	model.Close()
 }
 
-/*
 func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {
 	err = model.LoadUpscaleModel(in.UpscalePath)
 	if err != nil {
@@ -112,17 +112,12 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 	}
 	defer model.CloseUpscaleModel()
 
-	var total = len(filenames)
 	var wg = new(sync.WaitGroup)
-	for i, file := range filenames {
+	for _, file := range filenames {
 		var filenameIn = filepath.Join(in.OutputDir, file)
 		var filenameOut = filenameIn
 		if !in.DeleteUpscaled {
 			filenameOut = filepath.Join(in.OutputDir, "u-"+file)
-		}
-
-		if in.Debug {
-			fmt.Printf("\nUp scaling %d/%d: %s\n\n", i+1, total, file)
 		}
 
 		err = model.UpscaleImage(wg, filenameIn, filenameOut, 2)
@@ -134,4 +129,3 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 	wg.Wait()
 	return
 }
-*/
