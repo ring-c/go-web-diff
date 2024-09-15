@@ -13,6 +13,7 @@ type Options struct {
 	Schedule              Schedule `json:"schedule"`                //
 	GpuEnable             bool     `json:"gpu_enable"`              //
 	Debug                 bool     `json:"debug"`                   //
+	ReloadModel           bool     `json:"reload_model"`            //
 
 	// Ex Params
 	ModelPath string `json:"model_path"`

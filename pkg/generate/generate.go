@@ -54,7 +54,7 @@ func Generate(c echo.Context) (err error) {
 
 	model.SetOptions(in)
 
-	if in.ModelPath != lastModel || in.VaePath != lastVAE || in.Lora != lastLora {
+	if in.ReloadModel || in.ModelPath != lastModel || in.VaePath != lastVAE || in.Lora != lastLora {
 		err = model.LoadFromFile()
 		if err != nil {
 			fmt.Printf("\n\n\nERROR LoadFromFile\n%s\n\n\n", err.Error())

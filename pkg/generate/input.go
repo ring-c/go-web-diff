@@ -55,6 +55,7 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 func parsePrompt(input string, withGroups bool) string {
 	var data = make([]string, 0)
 	for _, str := range strings.Split(input, "\n") {
+		str = strings.TrimSpace(str)
 		if len(str) < 1 {
 			continue
 		}

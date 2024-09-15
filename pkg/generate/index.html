@@ -17,7 +17,7 @@
 <form id="main-form">
     <table style="width: 100%;">
         <tr>
-            <td style="text-align: right; width: 321px; vertical-align: top;">
+            <td style="width: 321px; vertical-align: top;">
                 <label>
                     Prompt:<br/>
                     <textarea name="prompt" cols=32 rows=54></textarea>
@@ -27,7 +27,7 @@
                     <span id="status"></span>&nbsp;<button type="submit">Send</button>
                 </div>
 
-                <details>
+                <details style="text-align: right;">
                     <summary style="text-align: left;">Options</summary>
 
                     <label>
@@ -89,6 +89,11 @@
                     <label>
                         Repeat:
                         <input type="checkbox" id="repeat"/>
+                    </label><br/>
+
+                    <label>
+                        Reload model every send:
+                        <input type="checkbox" name="reload_model"/>
                     </label>
 
                     <hr/>
@@ -202,7 +207,7 @@
                         if (data.full_width_preview) {
                             images += "<img src='output/" + img + "' alt='" + img + "'/>"
                         } else {
-                            images += "<img src='output/" + img + "' alt='" + img + "' style='width: " + data.width / 4 + "px; height: " + data.height / 4 + "px;'/>"
+                            images += "<img src='output/" + img + "' alt='" + img + "' style='max-width: 512px;'/>"
                         }
                         images += "</a>"
                     }
