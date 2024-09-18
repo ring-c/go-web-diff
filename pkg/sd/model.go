@@ -60,7 +60,6 @@ func (sd *Model) LoadFromFile() (err error) {
 		}
 
 		sd.cSD.FreeSDContext(sd.ctx)
-		sd.ctx = nil
 	}
 
 	_, err = os.Stat(sd.options.ModelPath)

@@ -44,6 +44,10 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
+	if in.ReloadModel {
+		ModelClose()
+	}
+
 	if model == nil {
 		model, err = sd.NewModel()
 		if err != nil {
@@ -90,6 +94,7 @@ func ModelClose() {
 	}
 
 	model.Close()
+	model = nil
 }
 
 func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {
