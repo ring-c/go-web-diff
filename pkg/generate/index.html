@@ -202,6 +202,10 @@
 
                     let images = "";
                     for (const img of resp['filenames']) {
+                        if (img === ""){
+                            continue
+                        }
+
                         // language=HTML
                         images += "<a target='_blank' href='output/" + img + "'>"
                         if (data.full_width_preview) {

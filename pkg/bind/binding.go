@@ -9,6 +9,8 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
+
+	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
 type CStableDiffusionCtx struct {
@@ -33,7 +35,8 @@ type CStableDiffusionImpl struct {
 	libSd       uintptr
 	libFilename string
 
-	SDSetLogCallback func(callback func(level int, text *byte, data unsafe.Pointer) unsafe.Pointer, data int)
+	SDSetLogCallback    func(callback func(level int, text *byte, data unsafe.Pointer) unsafe.Pointer, data int)
+	SDSetResultCallback func(callback func(num uint64, imageData *byte, in *opts.Options), in *opts.Options)
 
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
@@ -72,14 +75,15 @@ func NewCStableDiffusion() (*CStableDiffusionImpl, error) {
 	}
 
 	purego.RegisterLibFunc(&impl.SDSetLogCallback, libSd, "sd_set_log_callback")
+	purego.RegisterLibFunc(&impl.SDSetResultCallback, libSd, "sd_set_result_callback")
+
 	purego.RegisterLibFunc(&impl.newSDContext, libSd, "new_sd_ctx_go")
 	purego.RegisterLibFunc(&impl.freeSDContext, libSd, "free_sd_ctx")
+	purego.RegisterLibFunc(&impl.Text2Image, libSd, "txt2img")
 
 	purego.RegisterLibFunc(&impl.newUpscalerCtx, libSd, "new_upscaler_ctx")
 	purego.RegisterLibFunc(&impl.freeUpscalerCtx, libSd, "free_upscaler_ctx")
-
 	purego.RegisterLibFunc(&impl.Upscale, libSd, "upscale_go")
-	purego.RegisterLibFunc(&impl.Text2Image, libSd, "txt2img")
 
 	return &impl, err
 }
