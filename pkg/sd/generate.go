@@ -26,7 +26,7 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 		return
 	}
 
-	sd.filenames = make([]string, in.BatchCount)
+	sd.filenames = make([]string, 0)
 
 	var seed = in.Seed
 	if seed == -1 {
@@ -43,21 +43,23 @@ func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
 		prompt += fmt.Sprintf("<lora:%s>", lora)
 	}
 
-	sd.fileWrite.Add(in.BatchCount)
 	sd.cSD.SDSetResultCallback(sd.ResultCallback, in)
 
 	_ = sd.cSD.Text2Image(
 		sd.GetCTX(),
 		prompt, in.NegativePrompt,
 		in.ClipSkip,
-		in.CfgScale, 3.50, in.Width, in.Height,
+		in.CfgScale, 3.5, in.Width, in.Height,
 		int(in.SampleMethod), in.SampleSteps,
 		seed, in.BatchCount, nil, 0.9, 20, false, "",
 	)
 
 	sd.fileWrite.Wait()
 
+	sd.filenamesLock.Lock()
 	filenames = sd.filenames
+	sd.filenamesLock.Unlock()
+
 	return
 }
 
@@ -75,6 +77,7 @@ func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {
 }
 
 func (sd *Model) writeFile(data []byte, in *opts.Options, num uint64, seed int64) {
+	sd.fileWrite.Add(1)
 	defer func() {
 		sd.fileWrite.Done()
 	}()
@@ -100,5 +103,7 @@ func (sd *Model) writeFile(data []byte, in *opts.Options, num uint64, seed int64
 		return
 	}
 
-	sd.filenames[num-1] = filename
+	sd.filenamesLock.Lock()
+	sd.filenames = append(sd.filenames, filename)
+	sd.filenamesLock.Unlock()
 }
