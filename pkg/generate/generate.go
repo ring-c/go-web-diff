@@ -1,8 +1,10 @@
 package generate
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -33,12 +35,17 @@ func Generate(c echo.Context) (err error) {
 		}
 	}()
 
-	var resp = generateResp{
-		Filenames: make([]string, 0),
-	}
+	var resp = generateResp{}
 
 	in, err := getInput(c)
 	if err != nil {
+		resp.Error = err.Error()
+		_ = c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	err = os.Mkdir(in.OutputDir, 0755)
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)
 		return

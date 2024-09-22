@@ -65,7 +65,7 @@ func parsePrompt(input string, withGroups bool) string {
 		}
 
 		var text = fmt.Sprintf("(%s:1)", str)
-		if !withGroups || (strings.Contains("(", str) && strings.Contains(":", str) && strings.Contains(")", str)) {
+		if !withGroups || (strings.Contains(str, "(") && strings.Contains(str, ":") && strings.Contains(str, ")")) {
 			text = str
 		}
 

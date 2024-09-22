@@ -36,7 +36,7 @@ type CStableDiffusionImpl struct {
 	libFilename string
 
 	SDSetLogCallback    func(callback func(level int, text *byte, data unsafe.Pointer) unsafe.Pointer, data int)
-	SDSetResultCallback func(callback func(num uint64, imageData *byte, in *opts.Options), in *opts.Options)
+	SDSetResultCallback func(callback func(num uint64, imageData *byte, in *opts.Generation), in *opts.Generation)
 
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
@@ -58,7 +58,7 @@ type CStableDiffusionImpl struct {
 		controlStrength, styleStrength float32,
 		normalizeInput bool,
 		inputIDImagesPath string,
-	) unsafe.Pointer
+	)
 
 	Upscale func(ctx unsafe.Pointer, upscaleFactor, width, height, channel uint32, data []byte) unsafe.Pointer
 }

@@ -20,12 +20,9 @@
             <td style="width: 321px; vertical-align: top;">
                 <label>
                     Prompt:<br/>
-                    <textarea name="prompt" cols=32 rows=54></textarea>
+                    <textarea name="prompt" style="width: 321px; height: 800px;"></textarea>
                 </label><br/>
-
-                <div style="text-align: right;">
-                    <span id="status"></span>&nbsp;<button type="submit">Send</button>
-                </div>
+                <button type="submit">Send</button>&nbsp;<span id="status"></span>
 
                 <details style="text-align: right;">
                     <summary style="text-align: left;">Options</summary>
@@ -202,7 +199,7 @@
 
                     let images = "";
                     for (const img of resp['filenames']) {
-                        if (img === ""){
+                        if (img === "") {
                             continue
                         }
 

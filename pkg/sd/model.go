@@ -17,10 +17,6 @@ type Model struct {
 	cSD *bind.CStableDiffusionImpl
 	ctx *bind.CStableDiffusionCtx
 
-	filenamesLock sync.RWMutex
-	filenames     []string
-	fileWrite     sync.WaitGroup
-
 	esrganPath  string
 	upscalerCtx *bind.CUpScalerCtx
 }
