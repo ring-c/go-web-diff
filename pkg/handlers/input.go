@@ -1,4 +1,4 @@
-package generate
+package handlers
 
 import (
 	"errors"
@@ -14,7 +14,6 @@ var DefaultInput = &opts.Options{
 	RngType:   opts.CUDA_RNG,
 	WType:     opts.F16,
 	Schedule:  opts.DEFAULT,
-	VaeTiling: true,
 	GpuEnable: true,
 	Debug:     true,
 	Threads:   10,

@@ -28,7 +28,6 @@ type NewSDContextParams struct {
 	KeepClipOnCpu         bool
 	KeepControlNetCpu     bool
 	KeepVaeOnCpu          bool
-	WithLogs              bool
 }
 
 func stringToByteArray(in string) *byte {
@@ -56,7 +55,6 @@ type NewSDContextGoParams struct {
 	KeepControlNetCPU     bool
 	KeepVAEOnCPU          bool
 	VaeTiling             bool
-	WithLogs              bool
 	ShowDebug             bool
 
 	NThreads uint8
@@ -81,7 +79,6 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 		KeepClipOnCPU:         params.KeepClipOnCpu,
 		KeepControlNetCPU:     params.KeepControlNetCpu,
 		KeepVAEOnCPU:          params.KeepVaeOnCpu,
-		WithLogs:              params.WithLogs,
 		ShowDebug:             false,
 
 		NThreads: params.NThreads,

@@ -1,4 +1,4 @@
-package generate
+package handlers
 
 import (
 	_ "embed"
@@ -14,5 +14,5 @@ var indexHTML []byte
 // }
 
 func Index(c echo.Context) (err error) {
-	return c.File("./pkg/generate/index.html")
+	return c.File("./pkg/handlers/index.html")
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
-	"github.com/ring-c/go-web-diff/pkg/generate"
+	"github.com/ring-c/go-web-diff/pkg/handlers"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	generate.Routes(e)
+	handlers.Routes(e)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
@@ -45,5 +45,5 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	generate.ModelClose()
+	handlers.ModelClose()
 }

@@ -1,4 +1,4 @@
-package generate
+package handlers
 
 import (
 	"errors"
@@ -45,10 +45,13 @@ func Generate(c echo.Context) (err error) {
 	}
 
 	err = os.Mkdir(in.OutputDir, 0755)
-	if err != nil && !errors.Is(err, os.ErrExist) {
-		resp.Error = err.Error()
-		_ = c.JSON(http.StatusOK, resp)
-		return
+	if err != nil {
+		if !errors.Is(err, os.ErrExist) {
+			resp.Error = err.Error()
+			_ = c.JSON(http.StatusOK, resp)
+			return
+		}
+		err = nil
 	}
 
 	if in.ReloadModel {
@@ -77,7 +80,7 @@ func Generate(c echo.Context) (err error) {
 		lastLora = in.Lora
 	}
 
-	resp.Filenames, err = model.Generate(in)
+	resp.Filenames, err = model.Txt2Img(in)
 	if err != nil {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)

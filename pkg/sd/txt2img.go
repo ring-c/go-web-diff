@@ -8,7 +8,7 @@ import (
 	"github.com/ring-c/go-web-diff/pkg/opts"
 )
 
-func (sd *Model) Generate(in *opts.Options) (filenames []string, err error) {
+func (sd *Model) Txt2Img(in *opts.Options) (filenames []string, err error) {
 	if sd.GetCTX() == nil {
 		err = errors.New("model not loaded")
 		return
