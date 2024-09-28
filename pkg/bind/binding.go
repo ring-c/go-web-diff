@@ -37,7 +37,7 @@ type CStableDiffusionImpl struct {
 
 	SDSetLogCallback        func(callback func(level int, text *byte, data unsafe.Pointer) unsafe.Pointer, data int)
 	SDSetResultCallback     func(ctx unsafe.Pointer, callback func(num uint64, imageData *byte, in *opts.Generation), in *opts.Generation)
-	SDSetResultStepCallback func(ctx unsafe.Pointer, callback func(step uint64, imageData *byte, in *opts.Generation), in *opts.Generation)
+	SDSetResultStepCallback func(ctx unsafe.Pointer, callback func(num uint64, step uint64, imageData *byte, in *opts.Generation), in *opts.Generation)
 
 	newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)

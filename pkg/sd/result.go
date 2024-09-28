@@ -15,45 +15,49 @@ import (
 )
 
 func resultCallback(num uint64, imageData *byte, gen *opts.Generation) {
-	defer gen.OneDone()
+	go func(num uint64, imageData *byte, gen *opts.Generation) {
+		defer gen.OneDone()
 
-	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), gen.Seed+int64(num-1))
-	file, err := os.Create(path.Join(gen.OutputDir, filename))
-	if err != nil {
-		println("resultCallback os.Create: " + err.Error())
-		return
-	}
+		var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), gen.Seed+int64(num-1))
+		file, err := os.Create(path.Join(gen.OutputDir, filename))
+		if err != nil {
+			println("resultCallback os.Create: " + err.Error())
+			return
+		}
 
-	resultWrite(file, imageData, gen.Width, gen.Height)
+		resultWrite(file, imageData, gen.Width, gen.Height)
 
-	err = file.Close()
-	if err != nil {
-		println("resultCallback file.Close: " + err.Error())
-		return
-	}
+		err = file.Close()
+		if err != nil {
+			println("resultCallback file.Close: " + err.Error())
+			return
+		}
 
-	gen.AddFilename(filename)
+		gen.AddFilename(filename)
+	}(num, imageData, gen)
 }
 
-func resultStepCallback(step uint64, imageData *byte, gen *opts.Generation) {
-	// defer gen.OneDone()
+func resultStepCallback(num, step uint64, imageData *byte, gen *opts.Generation) {
+	go func(step uint64, imageData *byte, gen *opts.Generation) {
+		// defer gen.OneDone()
 
-	var filename = fmt.Sprintf("%d-%d-step%d.png", time.Now().Unix(), gen.Seed, step)
-	file, err := os.Create(path.Join(gen.OutputDir, filename))
-	if err != nil {
-		println("resultStepCallback os.Create: " + err.Error())
-		return
-	}
+		var filename = fmt.Sprintf("%d-%d-step%d.png", time.Now().Unix(), gen.Seed+int64(num-1), step)
+		file, err := os.Create(path.Join(gen.OutputDir, filename))
+		if err != nil {
+			println("resultStepCallback os.Create: " + err.Error())
+			return
+		}
 
-	resultWrite(file, imageData, gen.Width, gen.Height)
+		resultWrite(file, imageData, gen.Width, gen.Height)
 
-	err = file.Close()
-	if err != nil {
-		println("resultStepCallback file.Close: " + err.Error())
-		return
-	}
+		err = file.Close()
+		if err != nil {
+			println("resultStepCallback file.Close: " + err.Error())
+			return
+		}
 
-	// gen.AddFilename(filename)
+		// gen.AddFilename(filename)
+	}(step, imageData, gen)
 }
 
 func resultWrite(file *os.File, imageData *byte, width, height int) {

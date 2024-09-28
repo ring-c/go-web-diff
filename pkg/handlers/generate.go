@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -28,6 +28,34 @@ type generateResp struct {
 	Error     string   `json:"error,omitempty"`
 }
 
+func init() {
+	data, err := os.ReadFile("last_req.json")
+	if err != nil {
+		return
+	}
+
+	var in = DefaultInput
+	err = json.Unmarshal(data, in)
+	if err != nil {
+		return
+	}
+
+	model, err = sd.NewModel()
+	if err != nil {
+		return
+	}
+	model.SetOptions(in)
+
+	err = model.LoadFromFile()
+	if err != nil {
+		return
+	}
+
+	lastModel = in.ModelPath
+	lastVAE = in.VaePath
+	lastLora = in.Lora
+}
+
 func Generate(c echo.Context) (err error) {
 	defer func() {
 		if err != nil {
@@ -43,6 +71,11 @@ func Generate(c echo.Context) (err error) {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)
 		return
+	}
+
+	if in.WriteLastReq {
+		data, _ := json.MarshalIndent(in, "", "\t")
+		_ = os.WriteFile("last_req.json", data, 0644)
 	}
 
 	err = os.Mkdir(in.OutputDir, 0755)
@@ -66,8 +99,6 @@ func Generate(c echo.Context) (err error) {
 			return
 		}
 	}
-
-	spew.Dump(in)
 
 	model.SetOptions(in)
 

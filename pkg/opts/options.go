@@ -22,7 +22,10 @@ type Options struct {
 	WithUpscale    bool   `json:"with_upscale"`
 	DeleteUpscaled bool   `json:"delete_upscaled"`
 
-	OutputDir string `json:"-"`
+	WithStepsPreview bool `json:"with_steps_preview"`
+
+	OutputDir    string `json:"-"`
+	WriteLastReq bool   `json:"write_last_req"`
 
 	Prompt           string           `json:"prompt"`
 	NegativePrompt   string           `json:"negative_prompt"`
