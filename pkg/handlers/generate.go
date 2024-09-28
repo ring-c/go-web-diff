@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -65,6 +66,8 @@ func Generate(c echo.Context) (err error) {
 			return
 		}
 	}
+
+	spew.Dump(in)
 
 	model.SetOptions(in)
 

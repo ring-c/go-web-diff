@@ -20,26 +20,51 @@ func resultCallback(num uint64, imageData *byte, gen *opts.Generation) {
 	var filename = fmt.Sprintf("%d-%d.png", time.Now().Unix(), gen.Seed+int64(num-1))
 	file, err := os.Create(path.Join(gen.OutputDir, filename))
 	if err != nil {
-		println("writeFile os.Create: " + err.Error())
+		println("resultCallback os.Create: " + err.Error())
 		return
 	}
 
-	var data = unsafe.Slice(imageData, gen.Width*gen.Height*3)
-
-	var outputImg = bytesToImage(data, gen.Width, gen.Height)
-	err = imageToWriter(outputImg, file)
-	if err != nil {
-		println("writeFile imageToWriter: " + err.Error())
-		return
-	}
+	resultWrite(file, imageData, gen.Width, gen.Height)
 
 	err = file.Close()
 	if err != nil {
-		println("writeFile file.Close: " + err.Error())
+		println("resultCallback file.Close: " + err.Error())
 		return
 	}
 
 	gen.AddFilename(filename)
+}
+
+func resultStepCallback(step uint64, imageData *byte, gen *opts.Generation) {
+	// defer gen.OneDone()
+
+	var filename = fmt.Sprintf("%d-%d-step%d.png", time.Now().Unix(), gen.Seed, step)
+	file, err := os.Create(path.Join(gen.OutputDir, filename))
+	if err != nil {
+		println("resultStepCallback os.Create: " + err.Error())
+		return
+	}
+
+	resultWrite(file, imageData, gen.Width, gen.Height)
+
+	err = file.Close()
+	if err != nil {
+		println("resultStepCallback file.Close: " + err.Error())
+		return
+	}
+
+	// gen.AddFilename(filename)
+}
+
+func resultWrite(file *os.File, imageData *byte, width, height int) {
+	var data = unsafe.Slice(imageData, width*height*3)
+
+	var outputImg = bytesToImage(data, width, height)
+	var err = imageToWriter(outputImg, file)
+	if err != nil {
+		println("resultWrite imageToWriter: " + err.Error())
+		return
+	}
 }
 
 func imageToWriter(image *image.RGBA, writer io.Writer) (err error) {

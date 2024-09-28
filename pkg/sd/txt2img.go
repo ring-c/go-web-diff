@@ -31,7 +31,9 @@ func (sd *Model) Txt2Img(in *opts.Options) (filenames []string, err error) {
 
 	var generation = opts.NewGeneration(in)
 
-	sd.cSD.SDSetResultCallback(resultCallback, generation)
+	sd.cSD.SDSetResultCallback(sd.GetCTX(), resultCallback, generation)
+	// sd.cSD.SDSetResultStepCallback(sd.GetCTX(), resultStepCallback, generation)
+
 	sd.cSD.Text2Image(
 		sd.GetCTX(),
 		prompt, in.NegativePrompt,
