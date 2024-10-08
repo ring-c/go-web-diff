@@ -196,7 +196,11 @@
         // Save form data
         formSave(data)
 
-        if (!isFullSend) {
+        if (isFullSend) {
+            if (data.show_preview) {
+                data.full_width_preview = false
+            }
+        } else {
             data.show_preview = true
             data.batch_count = "1"
             data.repeat = false
