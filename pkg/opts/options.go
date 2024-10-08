@@ -2,6 +2,7 @@ package opts
 
 type Options struct {
 	VaePath               string   `json:"vae_path"`                //
+	UseVae                bool     `json:"use_vae"`                 //
 	TaesdPath             string   `json:"taesd_path"`              //
 	LoraModelDir          string   `json:"lora_model_dir"`          //
 	VaeDecodeOnly         bool     `json:"vae_decode_only"`         //

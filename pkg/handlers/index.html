@@ -15,21 +15,27 @@
 
 <body>
 <form id="main-form">
+    <!--    <table style="width: 100%; border: 1px solid red;">-->
     <table style="width: 100%;">
         <tr>
-            <td style="width: 321px; vertical-align: top;">
+            <td style="width: 321px; vertical-align: top; text-align: right;">
                 <label>
-                    Prompt:<br/>
-                    <textarea name="prompt" style="width: 321px; height: 800px;"></textarea>
+                    <textarea name="prompt" style="width: 321px; height: 800px;">Your prompt here</textarea>
                 </label><br/>
-
+                <span id="status"></span>
+                <button onclick="toggleOptions();">Options</button>
                 <button onclick="formSend(true)">Full Send</button>
                 <button onclick="formSend(false)">Try One</button>
-                <span id="status"></span>
+            </td>
 
-                <details style="text-align: right;">
-                    <summary style="text-align: left;">Options</summary>
+            <!--            <td id="preview" style="vertical-align: top; border: 1px solid green;">-->
+            <td id="preview" style="vertical-align: top;">
+                &nbsp;
+            </td>
 
+            <!--            <td style="width: 1%; vertical-align: top; border: 1px solid orange;">-->
+            <td style="width: 1%; vertical-align: top;">
+                <div id="options" style="text-align: right; display: block;">
                     <label>
                         Negative prompt:<br/>
                         <textarea name="negative_prompt" cols="30" rows="4"></textarea>
@@ -42,6 +48,7 @@
 
                     <label>
                         VAE path:
+                        <input type="checkbox" name="use_vae" checked/>
                         <input type="text" name="vae_path" value=""/>
                     </label><br/>
 
@@ -106,6 +113,11 @@
                         <input type="checkbox" name="write_last_req"/>
                     </label><br/>
 
+                    <label>
+                        VAE tiling:
+                        <input type="checkbox" name="vae_tiling" checked/>
+                    </label><br/>
+
                     <hr/>
 
                     <label>
@@ -133,11 +145,7 @@
                         Delete Upscaled:
                         <input type="checkbox" name="delete_upscaled"/>
                     </label><br/>
-                </details>
-            </td>
-
-            <td id="preview" style="vertical-align: top;">
-                &nbsp;
+                </div>
             </td>
         </tr>
     </table>
@@ -169,6 +177,7 @@
             }
         }
 
+        data["options"] = document.getElementById("options").style.display
         return data
     }
 
@@ -276,6 +285,8 @@
                             elem.value = stored[name];
                     }
                 }
+
+                document.getElementById("options").style.display = stored["options"]
             }
         }
     }
@@ -308,6 +319,15 @@
         xhr.send()
     }
     */
+
+    function toggleOptions() {
+        let options = document.getElementById("options");
+        if (options.style.display === "none") {
+            options.style.display = "block";
+        } else {
+            options.style.display = "none";
+        }
+    }
 </script>
 </body>
 </html>

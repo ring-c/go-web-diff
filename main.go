@@ -25,6 +25,7 @@ func main() {
 	// Setup
 	e := echo.New()
 	e.HideBanner = true
+	e.DisableHTTP2 = true
 
 	handlers.Routes(e)
 

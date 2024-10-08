@@ -79,6 +79,10 @@ func (sd *Model) LoadFromFile() (err error) {
 		Schedule:              sd.options.Schedule,
 	}
 
+	if !sd.options.UseVae {
+		params.VaePath = ""
+	}
+
 	sd.ctx = sd.cSD.NewSDContext(params)
 	if sd.ctx.CTX == nil {
 		err = errors.New("error sd context creation")
