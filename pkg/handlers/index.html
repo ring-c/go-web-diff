@@ -24,8 +24,9 @@
                 </label><br/>
                 <span id="status"></span>
                 <button onclick="toggleOptions();">Options</button>
-                <button onclick="formSend(true)">Full Send</button>
-                <button onclick="formSend(false)">Try One</button>
+                <button onclick="clearPreview()">Clear</button>
+                <button onclick="formSend(true)">Full</button>
+                <button onclick="formSend(false)">One</button>
             </td>
 
             <!--            <td id="preview" style="vertical-align: top; border: 1px solid green;">-->
@@ -160,17 +161,19 @@
                 continue;
             }
 
-            data[el.name] = el.value || '';
-
             switch (el.type) {
                 case 'checkbox':
                 case 'radio':
-                    data[el.name] = el.checked;
+                    data[el.name] = el.checked
                     break;
 
                 case 'number':
                 case 'range':
-                    data[el.name] = el.value.toLocaleString();
+                    data[el.name] = el.value.toLocaleString()
+                    break;
+
+                default:
+                    data[el.name] = el.value || ''
                     break;
             }
         }
@@ -188,6 +191,10 @@
     function formSave(data) {
         localStorage.setItem('main-form-data', JSON.stringify(data));
         setStatus("Saved");
+    }
+
+    function clearPreview() {
+        preview.innerHTML = "&nbsp;"
     }
 
     function formSend(isFullSend) {
@@ -209,7 +216,7 @@
         let dataJSON = JSON.stringify(data)
 
         if (data.clear_preview) {
-            preview.innerHTML = "&nbsp;"
+            clearPreview()
         }
 
         // Send to server
