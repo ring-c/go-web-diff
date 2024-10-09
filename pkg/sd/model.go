@@ -2,9 +2,7 @@ package sd
 
 import (
 	"errors"
-	"image"
 	"os"
-	"sync"
 	"unsafe"
 
 	"github.com/ring-c/go-web-diff/pkg/bind"
@@ -92,6 +90,7 @@ func (sd *Model) LoadFromFile() (err error) {
 	return
 }
 
+/*
 func (sd *Model) LoadUpscaleModel(esrganPath string) (err error) {
 	if _, err = os.Stat(esrganPath); errors.Is(err, os.ErrNotExist) {
 		err = errors.New("upscale model does not exists")
@@ -168,6 +167,7 @@ func (sd *Model) UpscaleImage(wg *sync.WaitGroup, filenameIn, filenameOut string
 
 	return
 }
+*/
 
 func (sd *Model) GetCTX() unsafe.Pointer {
 	return sd.ctx.CTX

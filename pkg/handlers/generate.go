@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
-	"sync"
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
@@ -121,12 +118,14 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	if in.WithUpscale {
-		err = Upscale(model, in, resp.Filenames)
-		if err != nil {
-			return
+	/*
+		if in.WithUpscale {
+			err = Upscale(model, in, resp.Filenames)
+			if err != nil {
+				return
+			}
 		}
-	}
+	*/
 
 	_ = c.JSON(http.StatusOK, resp)
 	return
@@ -141,6 +140,7 @@ func ModelClose() {
 	model = nil
 }
 
+/*
 func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) {
 	err = model.LoadUpscaleModel(in.UpscalePath)
 	if err != nil {
@@ -165,3 +165,4 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 	wg.Wait()
 	return
 }
+*/

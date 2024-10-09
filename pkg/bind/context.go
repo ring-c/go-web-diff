@@ -1,8 +1,6 @@
 package bind
 
 import (
-	"runtime"
-
 	"golang.org/x/sys/unix"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -64,32 +62,34 @@ type NewSDContextGoParams struct {
 }
 
 func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStableDiffusionCtx {
-	var paramsToC = NewSDContextGoParams{
-		ModelPath:      stringToByteArray(params.ModelPath),
-		VaePath:        stringToByteArray(params.VaePath),
-		TaesdPath:      stringToByteArray(params.TAESDPath),
-		ControlNetPath: stringToByteArray(params.ControlNetPath),
-		LoraModelDir:   stringToByteArray(params.LoraModelDir),
-		EmbedDir:       stringToByteArray(params.EmbedDir),
-		IDEmbedDir:     stringToByteArray(params.IDEmbedDir),
+	/*
+		var paramsToC = NewSDContextGoParams{
+			ModelPath:      stringToByteArray(params.ModelPath),
+			VaePath:        stringToByteArray(params.VaePath),
+			TaesdPath:      stringToByteArray(params.TAESDPath),
+			ControlNetPath: stringToByteArray(params.ControlNetPath),
+			LoraModelDir:   stringToByteArray(params.LoraModelDir),
+			EmbedDir:       stringToByteArray(params.EmbedDir),
+			IDEmbedDir:     stringToByteArray(params.IDEmbedDir),
 
-		VaeTiling:             params.VaeTiling,
-		FreeParamsImmediately: params.FreeParamsImmediately,
-		VaeDecodeOnly:         params.VaeDecodeOnly,
-		KeepClipOnCPU:         params.KeepClipOnCpu,
-		KeepControlNetCPU:     params.KeepControlNetCpu,
-		KeepVAEOnCPU:          params.KeepVaeOnCpu,
-		ShowDebug:             false,
+			VaeTiling:             params.VaeTiling,
+			FreeParamsImmediately: params.FreeParamsImmediately,
+			VaeDecodeOnly:         params.VaeDecodeOnly,
+			KeepClipOnCPU:         params.KeepClipOnCpu,
+			KeepControlNetCPU:     params.KeepControlNetCpu,
+			KeepVAEOnCPU:          params.KeepVaeOnCpu,
+			ShowDebug:             false,
 
-		NThreads: params.NThreads,
-		WType:    uint8(params.WType),
-		RngType:  uint8(params.RngType),
-		Schedule: uint8(params.Schedule),
-	}
+			NThreads: params.NThreads,
+			WType:    uint8(params.WType),
+			RngType:  uint8(params.RngType),
+			Schedule: uint8(params.Schedule),
+		}
+	*/
 
 	return &CStableDiffusionCtx{
 		Path: params.ModelPath,
-		CTX:  c.newSDContext(&paramsToC),
+		CTX:  c.newSDContext(params.ModelPath),
 	}
 }
 
@@ -100,6 +100,7 @@ func (c *CStableDiffusionImpl) FreeSDContext(ctx *CStableDiffusionCtx) {
 	ctx = nil
 }
 
+/*
 func (c *CStableDiffusionImpl) NewUpscalerCtx(esrganPath string, nThreads uint8, wType opts.WType) *CUpScalerCtx {
 	return &CUpScalerCtx{
 		ctx: c.newUpscalerCtx(esrganPath, nThreads, int(wType)),
@@ -113,3 +114,4 @@ func (c *CStableDiffusionImpl) FreeUpscalerCtx(ctx *CUpScalerCtx) {
 	ctx = nil
 	runtime.GC()
 }
+*/
