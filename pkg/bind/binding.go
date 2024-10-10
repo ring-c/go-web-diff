@@ -38,7 +38,7 @@ type CStableDiffusionImpl struct {
 	SDSetResultStepCallback func(ctx unsafe.Pointer, callback func(num uint64, step uint64, imageData *byte, in *opts.Generation), in *opts.Generation)
 
 	// newSDContext  func(params *NewSDContextGoParams) unsafe.Pointer
-	newSDContext  func(modelPath string) unsafe.Pointer
+	newSDContext  func(modelPath string, vaeTiling bool) unsafe.Pointer
 	freeSDContext func(ctx unsafe.Pointer)
 
 	Text2Image func(

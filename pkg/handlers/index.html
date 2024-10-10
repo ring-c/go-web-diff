@@ -55,9 +55,9 @@
 
                     <label>
                         Size:
-                        <input type="number" name="width" id="width" value="1024" style="width: 100px;"/>
+                        <input type="number" name="width" id="width" value="1024" style="width: 64px;"/>
                         <span onclick="sizeSwitch()" style="cursor: ew-resize;">&nbsp;X&nbsp;</span>
-                        <input type="number" name="height" id="height" value="768" style="width: 100px;"/>
+                        <input type="number" name="height" id="height" value="768" style="width: 64px;"/>
                     </label><br/>
                     <label>
                         CFG scale:
@@ -114,13 +114,12 @@
                         <input type="checkbox" name="write_last_req"/>
                     </label><br/>
 
-                    <!--
                     <label>
                         VAE tiling:
                         <input type="checkbox" name="vae_tiling" checked/>
                     </label><br/><br/><br/>
 
-
+                    <!--
                     <label>
                         LORAs dir:
                         <input type="text" name="lora_model_dir" value=""/>
@@ -210,7 +209,6 @@
                 data.full_width_preview = false
             }
         } else {
-            data.show_preview = true
             data.batch_count = "1"
             data.repeat = false
         }

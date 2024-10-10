@@ -89,7 +89,7 @@ func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStable
 
 	return &CStableDiffusionCtx{
 		Path: params.ModelPath,
-		CTX:  c.newSDContext(params.ModelPath),
+		CTX:  c.newSDContext(params.ModelPath, params.VaeTiling),
 	}
 }
 
