@@ -13,7 +13,7 @@ type Options struct {
 	FreeParamsImmediately bool     `json:"free_params_immediately"` //
 	WType                 WType    `json:"w_type"`                  //
 	RngType               RNGType  `json:"rng_type"`                //
-	Schedule              Schedule `json:"schedule"`                //
+	Schedule              Schedule `json:"schedule,string"`         //
 	GpuEnable             bool     `json:"gpu_enable"`              //
 	Debug                 bool     `json:"debug"`                   //
 	ReloadModel           bool     `json:"reload_model"`            //

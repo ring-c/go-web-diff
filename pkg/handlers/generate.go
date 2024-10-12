@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -64,6 +65,9 @@ func Generate(c echo.Context) (err error) {
 		_ = c.JSON(http.StatusOK, resp)
 		return
 	}
+
+	spew.Dump(in)
+	// return
 
 	err = os.Mkdir(in.OutputDir, 0755)
 	if err != nil {
