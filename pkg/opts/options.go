@@ -45,6 +45,8 @@ type Options struct {
 	BatchCount       int              `json:"batch_count,string"`
 	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 
-	Lora      string `json:"lora"`
-	ModelType int    `json:"model_type,string"`
+	Lora string `json:"lora"`
+
+	UseModelSD   bool `json:"use_model_sd"`   //
+	UseModelFlux bool `json:"use_model_flux"` //
 }

@@ -18,15 +18,17 @@
     <!--    <table style="width: 100%; border: 1px solid red;">-->
     <table style="width: 100%;">
         <tr>
-            <td style="width: 321px; vertical-align: top; text-align: right;">
+            <td style="width: 1%; vertical-align: top; text-align: right;">
                 <label>
-                    <textarea name="prompt" style="width: 321px; height: 800px;">Your prompt here</textarea>
-                </label><br/>
-                <span id="status"></span>
+                    <textarea name="prompt" style="width: 256px; height: 800px; margin-bottom: 4px;">
+                        Your prompt here
+                    </textarea>
+                </label>
                 <button onclick="toggleOptions();">Options</button>
                 <button onclick="clearPreview()">Clear</button>
                 <button onclick="formSend(true)">Full</button>
                 <button onclick="formSend(false)">One</button>
+                <div id="status"></div>
             </td>
 
             <!--            <td id="preview" style="vertical-align: top; border: 1px solid green;">-->
@@ -44,13 +46,13 @@
 
                     <label>
                         SD path:
-                        <input type="radio" value=0 name="model_type" checked/>
+                        <input type="checkbox" name="use_model_sd" checked/>
                         <input type="text" name="model_path" value=""/>
                     </label><br/>
 
                     <label>
                         FLUX path:
-                        <input type="radio" value=1 name="model_type"/>
+                        <input type="checkbox" name="use_model_flux"/>
                         <input type="text" name="flux_model_path" value=""/>
                     </label><br/>
 

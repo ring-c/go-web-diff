@@ -163,6 +163,9 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 */
 
 func modelSetupChanged(in *opts.Options) (changed bool) {
+
+	spew.Dump(lastReq)
+
 	if in.ModelPath != lastReq["ModelPath"] {
 		lastReq["ModelPath"] = in.ModelPath
 		changed = true

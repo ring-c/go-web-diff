@@ -44,8 +44,19 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 		return
 	}
 
-	if data.ModelType == 1 {
+	if data.UseModelSD && data.UseModelFlux {
+		err = errors.New("UseModelSD AND UseModelFlux at the same time not allowed")
+		return
+	}
+
+	if data.UseModelFlux {
 		data.ModelPath = ""
+	}
+
+	if data.UseModelSD {
+		data.FluxModelPath = ""
+		data.ClipLPath = ""
+		data.T5xxlPath = ""
 	}
 
 	data.Prompt = parsePrompt(data.Prompt, true)
