@@ -12,11 +12,10 @@ import (
 
 var DefaultInput = &opts.Options{
 	RngType:   opts.CUDA_RNG,
-	WType:     opts.F16,
+	WType:     opts.GGML_TYPE_COUNT,
 	Schedule:  opts.DEFAULT,
 	GpuEnable: true,
 	Debug:     true,
-	Threads:   10,
 
 	OutputDir: "./output/",
 
@@ -43,6 +42,10 @@ func getInput(c echo.Context) (data *opts.Options, err error) {
 	if data.Width%8 != 0 || data.Height%8 != 0 {
 		err = errors.New("width and height must be multiples of 8")
 		return
+	}
+
+	if data.ModelType == 1 {
+		data.ModelPath = ""
 	}
 
 	data.Prompt = parsePrompt(data.Prompt, true)

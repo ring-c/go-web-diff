@@ -9,15 +9,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/ring-c/go-web-diff/pkg/opts"
 	"github.com/ring-c/go-web-diff/pkg/sd"
 )
 
 var (
-	model *sd.Model
-
-	lastModel string
-	lastVAE   string
-	lastLora  string
+	model   *sd.Model
+	lastReq = make(map[string]string)
 )
 
 type generateResp struct {
@@ -36,6 +34,7 @@ func init() {
 	if err != nil {
 		return
 	}
+	modelSetupChanged(in)
 
 	model, err = sd.NewModel()
 	if err != nil {
@@ -47,10 +46,6 @@ func init() {
 	if err != nil {
 		return
 	}
-
-	lastModel = in.ModelPath
-	lastVAE = in.VaePath
-	lastLora = in.Lora
 }
 
 func Generate(c echo.Context) (err error) {
@@ -68,11 +63,6 @@ func Generate(c echo.Context) (err error) {
 		resp.Error = err.Error()
 		_ = c.JSON(http.StatusOK, resp)
 		return
-	}
-
-	if in.WriteLastReq {
-		data, _ := json.MarshalIndent(in, "", "\t")
-		_ = os.WriteFile("last_req.json", data, 0644)
 	}
 
 	err = os.Mkdir(in.OutputDir, 0755)
@@ -99,16 +89,12 @@ func Generate(c echo.Context) (err error) {
 
 	model.SetOptions(in)
 
-	if in.ReloadModel || in.ModelPath != lastModel || in.VaePath != lastVAE || in.Lora != lastLora {
+	if in.ReloadModel || modelSetupChanged(in) {
 		err = model.LoadFromFile()
 		if err != nil {
 			fmt.Printf("\n\n\nERROR LoadFromFile\n%s\n\n\n", err.Error())
 			return
 		}
-
-		lastModel = in.ModelPath
-		lastVAE = in.VaePath
-		lastLora = in.Lora
 	}
 
 	resp.Filenames, err = model.Txt2Img(in)
@@ -126,6 +112,11 @@ func Generate(c echo.Context) (err error) {
 			}
 		}
 	*/
+
+	if in.WriteLastReq {
+		data, _ := json.MarshalIndent(in, "", "\t")
+		_ = os.WriteFile("last_req.json", data, 0644)
+	}
 
 	_ = c.JSON(http.StatusOK, resp)
 	return
@@ -166,3 +157,37 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 	return
 }
 */
+
+func modelSetupChanged(in *opts.Options) (changed bool) {
+	if in.ModelPath != lastReq["ModelPath"] {
+		lastReq["ModelPath"] = in.ModelPath
+		changed = true
+	}
+
+	if in.FluxModelPath != lastReq["FluxModelPath"] {
+		lastReq["FluxModelPath"] = in.FluxModelPath
+		changed = true
+	}
+
+	if in.ClipLPath != lastReq["ClipLPath"] {
+		lastReq["ClipLPath"] = in.ClipLPath
+		changed = true
+	}
+
+	if in.T5xxlPath != lastReq["T5xxlPath"] {
+		lastReq["T5xxlPath"] = in.T5xxlPath
+		changed = true
+	}
+
+	if in.VaePath != lastReq["VaePath"] {
+		lastReq["VaePath"] = in.VaePath
+		changed = true
+	}
+
+	if in.Lora != lastReq["Lora"] {
+		lastReq["Lora"] = in.Lora
+		changed = true
+	}
+
+	return
+}

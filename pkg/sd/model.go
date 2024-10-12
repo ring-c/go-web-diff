@@ -57,24 +57,35 @@ func (sd *Model) LoadFromFile() (err error) {
 		sd.cSD.FreeSDContext(sd.ctx)
 	}
 
-	_, err = os.Stat(sd.options.ModelPath)
-	if err != nil {
+	_, err1 := os.Stat(sd.options.ModelPath)
+	_, err2 := os.Stat(sd.options.FluxModelPath)
+	if err1 != nil && err2 != nil {
 		err = errors.New("the system cannot find the model file specified")
 		return
 	}
 
 	var params = &bind.NewSDContextParams{
-		ModelPath:             sd.options.ModelPath,
+		ModelPath:     sd.options.ModelPath,
+		FluxModelPath: sd.options.FluxModelPath,
+		ClipLPath:     sd.options.ClipLPath,
+		T5xxlPath:     sd.options.T5xxlPath,
+
 		LoraModelDir:          sd.options.LoraModelDir,
 		VaePath:               sd.options.VaePath,
-		TAESDPath:             sd.options.TaesdPath,
-		VaeDecodeOnly:         sd.options.VaeDecodeOnly,
-		VaeTiling:             sd.options.VaeTiling,
-		FreeParamsImmediately: sd.options.FreeParamsImmediately,
-		NThreads:              sd.options.Threads,
+		NThreads:              10,
 		WType:                 sd.options.WType,
 		RngType:               sd.options.RngType,
 		Schedule:              sd.options.Schedule,
+		TAESDPath:             "",
+		ControlNetPath:        "",
+		EmbedDir:              "",
+		IDEmbedDir:            "",
+		VaeDecodeOnly:         sd.options.VaeDecodeOnly,
+		VaeTiling:             sd.options.VaeTiling,
+		FreeParamsImmediately: sd.options.FreeParamsImmediately,
+		KeepClipOnCpu:         false,
+		KeepControlNetCpu:     false,
+		KeepVaeOnCpu:          false,
 	}
 
 	if !sd.options.UseVae {

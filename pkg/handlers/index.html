@@ -43,8 +43,25 @@
                     </label><br/>
 
                     <label>
-                        Model path:
+                        SD path:
+                        <input type="radio" value=0 name="model_type" checked/>
                         <input type="text" name="model_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        FLUX path:
+                        <input type="radio" value=1 name="model_type"/>
+                        <input type="text" name="flux_model_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        ClipL path:
+                        <input type="text" name="clip_l_path" value=""/>
+                    </label><br/>
+
+                    <label>
+                        T5xxl path:
+                        <input type="text" name="t5xxl_path" value=""/>
                     </label><br/>
 
                     <label>
@@ -119,7 +136,7 @@
                         <input type="checkbox" name="vae_tiling" checked/>
                     </label><br/><br/><br/>
 
-                    <!--
+
                     <label>
                         LORAs dir:
                         <input type="text" name="lora_model_dir" value=""/>
@@ -129,22 +146,23 @@
                         <textarea name="lora" cols="30" rows="4"></textarea>
                     </label>
 
-                    <br/><br/><br/>
-                    <label>
-                        Upscale model path:
-                        <input type="text" name="upscale_path" value=""/>
-                    </label><br/>
+                    <!--
+                  <br/><br/><br/>
+                  <label>
+                      Upscale model path:
+                      <input type="text" name="upscale_path" value=""/>
+                  </label><br/>
 
-                    <label>
-                        Upscale:
-                        <input type="checkbox" name="with_upscale"/>
-                    </label><br/>
+                  <label>
+                      Upscale:
+                      <input type="checkbox" name="with_upscale"/>
+                  </label><br/>
 
-                    <label>
-                        Delete Upscaled:
-                        <input type="checkbox" name="delete_upscaled"/>
-                    </label><br/>
-                    -->
+                  <label>
+                      Delete Upscaled:
+                      <input type="checkbox" name="delete_upscaled"/>
+                  </label><br/>
+                  -->
                 </div>
             </td>
         </tr>
@@ -164,7 +182,6 @@
 
             switch (el.type) {
                 case 'checkbox':
-                case 'radio':
                     data[el.name] = el.checked
                     break;
 

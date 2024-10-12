@@ -1,14 +1,16 @@
 package opts
 
 type Options struct {
-	VaePath               string   `json:"vae_path"`                //
-	UseVae                bool     `json:"use_vae"`                 //
-	TaesdPath             string   `json:"taesd_path"`              //
+	VaePath       string `json:"vae_path"`        //
+	UseVae        bool   `json:"use_vae"`         //
+	VaeDecodeOnly bool   `json:"vae_decode_only"` //
+	VaeTiling     bool   `json:"vae_tiling"`      //
+
+	// TaesdPath             string   `json:"taesd_path"`              //
+	// Threads               uint8    `json:"threads,string"`          // CPU generation
+
 	LoraModelDir          string   `json:"lora_model_dir"`          //
-	VaeDecodeOnly         bool     `json:"vae_decode_only"`         //
-	VaeTiling             bool     `json:"vae_tiling"`              //
 	FreeParamsImmediately bool     `json:"free_params_immediately"` //
-	Threads               uint8    `json:"threads,string"`          // CPU generation
 	WType                 WType    `json:"w_type"`                  //
 	RngType               RNGType  `json:"rng_type"`                //
 	Schedule              Schedule `json:"schedule"`                //
@@ -17,7 +19,10 @@ type Options struct {
 	ReloadModel           bool     `json:"reload_model"`            //
 
 	// Ex Params
-	ModelPath string `json:"model_path"`
+	ModelPath     string `json:"model_path"`
+	FluxModelPath string `json:"flux_model_path"`
+	ClipLPath     string `json:"clip_l_path"`
+	T5xxlPath     string `json:"t5xxl_path"`
 
 	UpscalePath    string `json:"upscale_path"`
 	WithUpscale    bool   `json:"with_upscale"`
@@ -40,5 +45,6 @@ type Options struct {
 	BatchCount       int              `json:"batch_count,string"`
 	OutputsImageType OutputsImageType `json:"outputs_image_type"`
 
-	Lora string `json:"lora"`
+	Lora      string `json:"lora"`
+	ModelType int    `json:"model_type,string"`
 }

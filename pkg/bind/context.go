@@ -7,13 +7,16 @@ import (
 )
 
 type NewSDContextParams struct {
-	ModelPath    string
-	LoraModelDir string
-	VaePath      string
-	NThreads     uint8
-	WType        opts.WType
-	RngType      opts.RNGType
-	Schedule     opts.Schedule
+	ModelPath     string
+	LoraModelDir  string
+	VaePath       string
+	NThreads      uint8
+	WType         opts.WType
+	RngType       opts.RNGType
+	Schedule      opts.Schedule
+	FluxModelPath string
+	ClipLPath     string
+	T5xxlPath     string
 
 	// newSDContextParamsSet
 	TAESDPath             string
@@ -40,6 +43,9 @@ func stringToByteArray(in string) *byte {
 
 type NewSDContextGoParams struct {
 	ModelPath      *byte
+	FluxModelPath  *byte
+	ClipLPath      *byte
+	T5xxlPath      *byte
 	VaePath        *byte
 	TaesdPath      *byte
 	ControlNetPath *byte
@@ -62,34 +68,37 @@ type NewSDContextGoParams struct {
 }
 
 func (c *CStableDiffusionImpl) NewSDContext(params *NewSDContextParams) *CStableDiffusionCtx {
-	/*
-		var paramsToC = NewSDContextGoParams{
-			ModelPath:      stringToByteArray(params.ModelPath),
-			VaePath:        stringToByteArray(params.VaePath),
-			TaesdPath:      stringToByteArray(params.TAESDPath),
-			ControlNetPath: stringToByteArray(params.ControlNetPath),
-			LoraModelDir:   stringToByteArray(params.LoraModelDir),
-			EmbedDir:       stringToByteArray(params.EmbedDir),
-			IDEmbedDir:     stringToByteArray(params.IDEmbedDir),
+	var paramsToC = NewSDContextGoParams{
+		ModelPath: stringToByteArray(params.ModelPath),
 
-			VaeTiling:             params.VaeTiling,
-			FreeParamsImmediately: params.FreeParamsImmediately,
-			VaeDecodeOnly:         params.VaeDecodeOnly,
-			KeepClipOnCPU:         params.KeepClipOnCpu,
-			KeepControlNetCPU:     params.KeepControlNetCpu,
-			KeepVAEOnCPU:          params.KeepVaeOnCpu,
-			ShowDebug:             false,
+		FluxModelPath: stringToByteArray(params.FluxModelPath),
+		ClipLPath:     stringToByteArray(params.ClipLPath),
+		T5xxlPath:     stringToByteArray(params.T5xxlPath),
 
-			NThreads: params.NThreads,
-			WType:    uint8(params.WType),
-			RngType:  uint8(params.RngType),
-			Schedule: uint8(params.Schedule),
-		}
-	*/
+		VaePath:        stringToByteArray(params.VaePath),
+		TaesdPath:      stringToByteArray(params.TAESDPath),
+		ControlNetPath: stringToByteArray(params.ControlNetPath),
+		LoraModelDir:   stringToByteArray(params.LoraModelDir),
+		EmbedDir:       stringToByteArray(params.EmbedDir),
+		IDEmbedDir:     stringToByteArray(params.IDEmbedDir),
+
+		VaeTiling:             params.VaeTiling,
+		FreeParamsImmediately: params.FreeParamsImmediately,
+		VaeDecodeOnly:         params.VaeDecodeOnly,
+		KeepClipOnCPU:         params.KeepClipOnCpu,
+		KeepControlNetCPU:     params.KeepControlNetCpu,
+		KeepVAEOnCPU:          params.KeepVaeOnCpu,
+		ShowDebug:             false,
+
+		NThreads: params.NThreads,
+		WType:    uint8(params.WType),
+		RngType:  uint8(params.RngType),
+		Schedule: uint8(params.Schedule),
+	}
 
 	return &CStableDiffusionCtx{
 		Path: params.ModelPath,
-		CTX:  c.newSDContext(params.ModelPath, params.VaeTiling),
+		CTX:  c.newSDContext(&paramsToC),
 	}
 }
 
