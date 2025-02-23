@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -77,12 +76,12 @@ func parsePrompt(input string, withGroups bool) string {
 			continue
 		}
 
-		var text = fmt.Sprintf("(%s:1)", str)
-		if !withGroups || (strings.Contains(str, "(") && strings.Contains(str, ":") && strings.Contains(str, ")")) {
-			text = str
-		}
+		// var text = fmt.Sprintf("%s", str)
+		// if !withGroups || (strings.Contains(str, "(") && strings.Contains(str, ":") && strings.Contains(str, ")")) {
+		// 	text = str
+		// }
 
-		data = append(data, text)
+		data = append(data, str)
 	}
 
 	return strings.Join(data, ", ")

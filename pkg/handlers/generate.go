@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 
 	"github.com/ring-c/go-web-diff/pkg/opts"
@@ -66,7 +66,19 @@ func Generate(c echo.Context) (err error) {
 		return
 	}
 
-	spew.Dump(in)
+	println()
+	println()
+	println()
+
+	for _, s := range strings.Split(in.Prompt, ", ") {
+		println(s)
+	}
+
+	println()
+	println()
+	println()
+
+	// spew.Dump(in)
 	// return
 
 	err = os.Mkdir(in.OutputDir, 0755)
@@ -164,7 +176,7 @@ func Upscale(model *sd.Model, in *opts.Options, filenames []string) (err error) 
 
 func modelSetupChanged(in *opts.Options) (changed bool) {
 
-	spew.Dump(lastReq)
+	// spew.Dump(lastReq)
 
 	if in.ModelPath != lastReq["ModelPath"] {
 		lastReq["ModelPath"] = in.ModelPath
